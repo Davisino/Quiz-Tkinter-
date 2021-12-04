@@ -1,5 +1,4 @@
 import tkinter as tk
-
 from LogIn import LogInPage
 from uHome import UserHomePage
 from aHome import AdminHomePage
@@ -32,7 +31,7 @@ from Third import ThirdPage
 class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-
+        self.modules = 0
         #Create the window
         window = tk.Frame(self)
         window.pack()
@@ -50,6 +49,7 @@ class App(tk.Tk):
     def change_frame(self, page):
         frame = self.frames[page]
         frame.tkraise()
-
+    def getNumModules(self):
+        print(self.modules)
 app = App()
 app.mainloop()
