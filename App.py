@@ -3,6 +3,8 @@ from LogIn import LogInPage
 from uHome import UserHomePage
 from aHome import AdminHomePage
 from Third import ThirdPage
+import sys
+import os
 
 # HOW TO HANDLE THE ADMIN UI VS NORMAL USER UI?
 # Idea 1: create a database to store all
@@ -22,7 +24,6 @@ from Third import ThirdPage
         # ii. ADD:
             # admin will click on the + sign button and immediately a new window will pop up for the user to add the new module and 5 default questions.
 
-
     # Normal user select module
 
 
@@ -31,7 +32,7 @@ from Third import ThirdPage
 class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        self.modules = 0
+        self.currScore = 0
         #Create the window
         window = tk.Frame(self)
         window.pack()
@@ -49,7 +50,11 @@ class App(tk.Tk):
     def change_frame(self, page):
         frame = self.frames[page]
         frame.tkraise()
-    def getNumModules(self):
-        print(self.modules)
+    def getScore(self):
+        print(self.currScore)
+    def restart_program(self):
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+
 app = App()
 app.mainloop()
