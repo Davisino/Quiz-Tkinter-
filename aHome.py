@@ -38,6 +38,14 @@ class AdminHomePage(tk.Frame):
             family="Arial",
             size=16,
             weight='bold')
+        fontBtn = tkFont.Font(
+            family="Arial",
+            size=14,
+            )
+        fontTitle = tkFont.Font(
+            family="Arial",
+            size=22,
+        )
         head = tk.LabelFrame(self, text="Admin Page", bg='#FBFDF4', font=fontFrame, bd=1)
         head.pack(fill='both', expand='yes', padx=20, pady=10)
 
@@ -57,9 +65,12 @@ class AdminHomePage(tk.Frame):
         # btn = tk.Button(self, text="ClickToCreateDatabase", font=fontFrame, command=createDB)
         # btn.pack()
 
-        titleLabel = tk.Label(head, text="Current Modules", font=fontFrame)
+        titleLabel = tk.Label(head, text="Current Modules", font=fontTitle)
         titleLabel.grid(row=0, column=0, pady=20)
 
+
+
+        # ----------- USEFEUL FUNCTIONS ---------
         def fetchModules():
             # This function will return all the modules from the Modules table in a list of tuples
             modules = ''
@@ -80,57 +91,71 @@ class AdminHomePage(tk.Frame):
                     sqliteConnection.close()
                     print("The SQLite connection is closed")
             return modules
-        def deleteAndUpdate():
-            if self.isActive:
+        def onlyDeleteBtnModules():
+            row = 2
+            col = 0
+            count = len(fetchModules())
+            print(count,'sss')
+            while row < 7 and col < 2 and count > 0:
+                a = head.grid_slaves(row, col)
+                if len(a) > 0:
+                    a[0].destroy()
+                    count -= 1
+                    row += 1
+                    if row == 7:
+                        row = 2
+                        col += 1
+            self.isActive = False
+            return
+        def delBtnModsAndUpdate():
+            if self.isActive is True:
                 row = 2
                 col = 0
-                while row < 7 and col < 2:
+                count = len(fetchModules())
+                print(count, 'sss')
+                while row < 7 and col < 2 and count > 0:
                     a = head.grid_slaves(row, col)
+
                     if len(a) > 0:
                         a[0].destroy()
+                        count -= 1
                         row += 1
                         if row == 7:
                             row = 2
                             col += 1
-
             row = 2
             col = 0
             # We get all the modules and store them in the getModules
             # Then we put them in columns of 5 rows while
             # popping modules names from it so that no modules are repeated
             getModules = fetchModules()
-            # 20,178
-            # 20, 178 + 122
-            x,y = 20, 178
 
             while row < 7 and col < 3 and len(getModules) > 0:
                 mod_txt = getModules[-1][0]
-                mod_btn = tk.Button(head, text=mod_txt, font=fontFrame, width=15, height=1)
-                mod_btn.grid(row=row, column=col, padx=20, pady=40)
-
-                delete_mod = tk.Button(head, text="edit", width=15, height=1)
-                delete_mod.place(x=x, y=y)
-
-                edit_mod = tk.Button(head, text="delete module", width=13, height=1)
-                edit_mod.place(x=x+104, y=y)
-                y = y + 122
-
+                mod_btn = tk.Button(head, text=mod_txt, font=fontBtn, width=15, height=1)
+                mod_btn.grid(row=row, column=col, padx=15, pady=20)
+                # delete_mod = tk.Button(head, text="edit", width=15, height=1)
+                # delete_mod.place(x=x, y=y)
+                #
+                # edit_mod = tk.Button(head, text="delete module", width=13, height=1)
+                # edit_mod.place(x=x+104, y=y)
                 row += 1
                 if row == 7:
                     row = 2
                     col += 1
-                    x += 245
-                    y = 178
                 getModules.pop()
-            self.isActive = True
-        deleteAndUpdate()
-        # This button 'update' is necessary because if I try to run the
-        # delete and update function to erase all widgets and put them again
-        # tkinter app crashes. Therefore, the user needs to update it manually.
 
-        update = tk.Button(head, text="update", command=deleteAndUpdate)
-        update.grid(row=1, column=1)
-        # Check If possible answers are in the correct formar
+            self.isActive = True
+        delBtnModsAndUpdate()
+
+        def findModId(module_name):
+
+            conn = sqlite3.connect('./Databases/quiz_storage.db')
+            cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "';")
+            row = cursor.fetchall()
+            print(str(row[0][0]))
+            return str(row[0][0])
+        # ---------------END OF USEFUL FUNCTIONS ---------------
         def addNewModule():
             window = tk.Tk()
             #
@@ -196,8 +221,8 @@ class AdminHomePage(tk.Frame):
 
                     sqlite_insert_query = "INSERT INTO Questions (quest_name, quest_feedback," \
                                           " mod_id, times, possible_answers)" \
-                                          " Values " + "('" + quest_name + "')" + ",('" + quest_feed + "')" + ",('" + quest_mod_id +\
-                                          "')" + ",('" + str(0) + "')" + ",('" + possible_answers + "');"
+                                          " Values " + "('" + quest_name + "'" + ",'" + quest_feed + "'" + ", '" + quest_mod_id +\
+                                          "'" + ",'" + str(0) + "'" + ",'" + possible_answers + "');"
                     print(sqlite_insert_query)
                     count = cursor.execute(sqlite_insert_query)
                     sqliteConnection.commit()
@@ -211,28 +236,124 @@ class AdminHomePage(tk.Frame):
                         print("The SQLite connection is closed")
 
 
-            def findModId(module_name):
-                conn = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "'")
-                row = cursor.fetchall()
-
-                return str(row[0][0])
-
-            def register_mod():
-
+            def register_mod_DB():
+                #
                 # 1. We add the module to database so it has a Key
-                add_mod(e1.get())
                 # 2. We find that key
-                e6 = findModId(e1.get())
                 # 3. We can now add questions to its own table having access to the specific foreign key (mod_id)
+                #
+                onlyDeleteBtnModules()
+                add_mod(e1.get())
+                e6 = findModId(e1.get())
                 add_quest(e2.get(), e4.get(), e6, e3.get())
+                delBtnModsAndUpdate()
 
-            submit_mod = tk.Button(window, text="add Module", command=register_mod)
+
+            submit_mod = tk.Button(window, text="add Module", command=register_mod_DB)
             submit_mod.place(x=130, y=290)
 
 
-        add_mod_btn = tk.Button(head, text="new module", font=fontFrame, command=addNewModule)
+        add_mod_btn = tk.Button(head, text="New Module", font=fontBtn, command=addNewModule)
         add_mod_btn.grid(row=0, column=1, padx=(100, 0))
+
+        def delModuleFrame():
+            window = tk.Tk()
+
+            # window.grid_rowconfigure(0, minsize=600)
+            # window.grid_columnconfigure(0, minsize=700)
+            # make the window not resizable
+            window.resizable(0, 0)
+            window.geometry("320x200")
+            window.title("Delete Module")
+            currModule = tk.StringVar(window)
+            currModule.set("--Select Module--")  # default value
+
+
+
+            chooseTest = tk.OptionMenu(window, currModule, *fetchModules())
+            chooseTest.config(font=('Arial', 15, 'bold'))
+            menu = window.nametowidget(chooseTest.menuname)
+            menu.config(font=('Arial', 10, 'bold'))
+            chooseTest.place(x=20, y=20)
+
+
+            # ORDER TO DELETE A MODULE
+            #     1. Delete All questions from Databases
+            #     2. Delete Module From database
+            #     3. Close window frame and DeleteAndUpdate
+            #
+
+            # DEL QUESTIONS
+            def toText(module):
+                i = 0
+                z = len(module)-1
+                az = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+                while module[i] not in az:
+                    i+=1
+                while module[z] not in az:
+                    z -=1
+
+                return module[i:z+1]
+
+
+            def delAllQuestionsFromDB(moduleId):
+                try:
+                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+                    cursor = sqliteConnection.cursor()
+                    print("Succesfully connected to SQLite")
+
+                    sqlite_insert_query = "DELETE FROM Questions WHERE mod_id = " + moduleId + ";"
+                    print(sqlite_insert_query)
+                    count = cursor.execute(sqlite_insert_query)
+                    sqliteConnection.commit()
+                    print("Questions Deleted")
+                    cursor.close()
+                except sqlite3.Error as error:
+                    print("Failed to Delete questions into Sqlite ", error)
+                finally:
+                    if sqliteConnection:
+                        sqliteConnection.close()
+                        print("The SQLite connection is closed")
+            def delModFromDB(moduleName):
+                try:
+                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+                    cursor = sqliteConnection.cursor()
+                    print("Succesfully connected to SQLite")
+
+                    sqlite_insert_query = "DELETE FROM Modules WHERE mod_name = '" + moduleName + "';"
+                    print(sqlite_insert_query)
+                    count = cursor.execute(sqlite_insert_query)
+                    sqliteConnection.commit()
+                    print("Module Deleted")
+                    cursor.close()
+                except sqlite3.Error as error:
+                    print("Failed to Delete questions into Sqlite ", error)
+                finally:
+                    if sqliteConnection:
+                        sqliteConnection.close()
+                        print("The SQLite connection is closed")
+
+            def deleteModule():
+                # 1. Delete all buttons first
+                # 2. delete module from DB
+                # 3. Display buttons again
+                onlyDeleteBtnModules()
+                modToDelete = toText(currModule.get())
+                getModId = findModId(modToDelete)
+                delAllQuestionsFromDB(getModId)
+                delModFromDB(modToDelete)
+                delBtnModsAndUpdate()
+                window.destroy()
+
+
+            sub_del = tk.Button(window, text="erase", font= ('Arial', 14, 'bold'), command=deleteModule)
+            sub_del.place(x=230, y=20)
+
+            alert_txt = tk.Label(window, text="Careful! All questions will also be erased", font=('Arial', 8, 'bold'))
+            alert_txt.place(x=20, y=120)
+
+        del_mod_btn = tk.Button(head, text="Del Module", font=fontBtn, command=delModuleFrame)
+        del_mod_btn.grid(row=0, column=2, padx=(10, 0))
 
 
 

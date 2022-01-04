@@ -26,7 +26,6 @@ import os
 
     # Normal user select module
 
-
 # *args store all arguments in tuple
 # **kwargs store key value pairs.
 class App(tk.Tk):
