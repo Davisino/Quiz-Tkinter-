@@ -44,11 +44,15 @@ class App(tk.Tk):
             frame = f(window, self)
             self.frames[f] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-        self.change_frame(AdminHomePage)
+        self.change_frame(UserHomePage)
 
     def change_frame(self, page):
         frame = self.frames[page]
         frame.tkraise()
+
+    # This function can be used to get the score of the user at any point in time whenever a
+    # quiz has been initialized.
+    # There is gotta be another function to update the score to 0.
     def getScore(self):
         print(self.currScore)
     def restart_program(self):

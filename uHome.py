@@ -12,12 +12,10 @@ import sqlite3
 #      How: fetch all the questions of 'module selected' from DB of questions and select 5 of them randomly.
 #           Add those 5 questions to the quest_chosen for later use
 
-
 # DO: Create a submit/finish quiz button
 #     i.This button should display the feedback from the DB and display the total score.
 #     ii. At the same time the APP should store in results the test taken.
 #     iii. Reset user score to 0 and take user to home user page
-
 
 # IMPORTANT!
 # Do: Keep track of the most 2 most questions repeated in the quiz.

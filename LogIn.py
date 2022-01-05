@@ -5,9 +5,6 @@ from tkinter import messagebox
 from uHome import UserHomePage
 from aHome import AdminHomePage
 
-# TODO LIST:
-# Make buttons hover
-# Dont let user click in register when a register window is open.
 
 class LogInPage(tk.Frame):
     def __init__(self, parent, controller):

@@ -3,32 +3,6 @@ from Third import ThirdPage
 import tkinter.font as tkFont
 import sqlite3
 
-# Today 13/12/2021
-# Implemented fetch data from sqlite3 database and display modules into the app.
-# Corrected minor errors, on some functions logic.
-# add new update button to update the current list of modules every time a module is created
-
-# What next?
-#     every time add module should also add questions and feedback to quest table.
-#
-
-
-# MODULE
-# c.execute("""CREATE TABLE Modules (
-#                         mod_id INTEGER PRIMARY KEY,
-#                         mod_name TEXT NOT NULL
-#             )""")
-#
-# c.execute("""CREATE TABLE Questions (
-#                                              quest_id INTEGER PRIMARY KEY,
-#                                              quest_name TEXT NOT NULL,
-#                                              quest_feedback TEXT NOT NULL,
-#                                              mod_id INTEGER NOT NULL,
-#                                              FOREIGN KEY (mod_id)
-#                                                  REFERENCES Modules (mod_id)
-#                                  )""")
-
-
 class AdminHomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -49,26 +23,8 @@ class AdminHomePage(tk.Frame):
         head = tk.LabelFrame(self, text="Admin Page", bg='#FBFDF4', font=fontFrame, bd=1)
         head.pack(fill='both', expand='yes', padx=20, pady=10)
 
-        # def createDB():
-        #     mod_storage = sqlite3.connect('./Databases/quiz_storage.db')
-        #     c = mod_storage.cursor()
-        #
-        #     c.execute("""CREATE TABLE Questions (
-        #                                      quest_id INTEGER PRIMARY KEY,
-        #                                      quest_name TEXT NOT NULL,
-        #                                      quest_feedback TEXT NOT NULL,
-        #                                      mod_id INTEGER NOT NULL,
-        #                                      FOREIGN KEY (mod_id)
-        #                                          REFERENCES Modules (mod_id)
-        #                          )""")
-        #     print('Questions table created and connected to modules table')
-        # btn = tk.Button(self, text="ClickToCreateDatabase", font=fontFrame, command=createDB)
-        # btn.pack()
-
         titleLabel = tk.Label(head, text="Current Modules", font=fontTitle)
         titleLabel.grid(row=0, column=0, pady=20)
-
-
 
         # ----------- USEFEUL FUNCTIONS ---------
         def fetchModules():
@@ -107,12 +63,54 @@ class AdminHomePage(tk.Frame):
                         col += 1
             self.isActive = False
             return
+        def change_mod_name(curr_mod_name):
+            window = tk.Tk()
+            window.resizable(0, 0)
+            window.geometry("320x150")
+
+            window.title("New Module Name")
+            new_name_entry = tk.Entry(window, font=fontBtn, borderwidth=5, width=22)
+            new_name_entry.place(x=20, y=20)
+
+            def update_mod_name_in_db(curr_name, desired_name):
+                print(curr_name, desired_name, 'sss')
+                try:
+                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+                    cursor = sqliteConnection.cursor()
+                    print("Succesfully connected to SQLite")
+
+                    sqlite_insert_query = "Update Modules set mod_name = " + "'" + desired_name + "'" + " where mod_name = " + "'" + curr_name + "';"
+                    print(sqlite_insert_query)
+                    count = cursor.execute(sqlite_insert_query)
+                    sqliteConnection.commit()
+                    print("record Updated")
+                    cursor.close()
+                except sqlite3.Error as error:
+                    print("Failed to Update Data Into Sqlite3", error)
+                finally:
+                    if sqliteConnection:
+                        sqliteConnection.close()
+                        print("The SQLite connection is closed")
+
+            def execute_mod_change(curr_name, desired_name):
+
+                update_mod_name_in_db(curr_name, desired_name)
+
+                window.destroy()
+
+            new_name_sub = tk.Button(window, text="submit", font=fontBtn,  width=7, command= lambda: execute_mod_change(curr_mod_name, new_name_entry.get()))
+            new_name_sub.place(x=240, y=16)
+
+            # --------------- Change Module Name ----------------
+
+
+
+
         def delBtnModsAndUpdate():
             if self.isActive is True:
                 row = 2
                 col = 0
                 count = len(fetchModules())
-                print(count, 'sss')
                 while row < 7 and col < 2 and count > 0:
                     a = head.grid_slaves(row, col)
 
@@ -132,13 +130,9 @@ class AdminHomePage(tk.Frame):
 
             while row < 7 and col < 3 and len(getModules) > 0:
                 mod_txt = getModules[-1][0]
-                mod_btn = tk.Button(head, text=mod_txt, font=fontBtn, width=15, height=1)
+                mod_btn = tk.Button(head, text=mod_txt, font=fontBtn, width=15, height=1, command=lambda: change_mod_name(mod_txt))
                 mod_btn.grid(row=row, column=col, padx=15, pady=20)
-                # delete_mod = tk.Button(head, text="edit", width=15, height=1)
-                # delete_mod.place(x=x, y=y)
-                #
-                # edit_mod = tk.Button(head, text="delete module", width=13, height=1)
-                # edit_mod.place(x=x+104, y=y)
+
                 row += 1
                 if row == 7:
                     row = 2
@@ -149,19 +143,19 @@ class AdminHomePage(tk.Frame):
         delBtnModsAndUpdate()
 
         def findModId(module_name):
-
             conn = sqlite3.connect('./Databases/quiz_storage.db')
             cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "';")
             row = cursor.fetchall()
             print(str(row[0][0]))
             return str(row[0][0])
         # ---------------END OF USEFUL FUNCTIONS ---------------
+
+
+
+        # ---------------ADD MODULE---------------
         def addNewModule():
             window = tk.Tk()
-            #
-            # window.grid_rowconfigure(0, minsize=600)
-            # window.grid_columnconfigure(0, minsize=700)
-            # make the window not resizable
+
             window.resizable(0, 0)
             window.geometry("320x350")
 
@@ -247,6 +241,7 @@ class AdminHomePage(tk.Frame):
                 e6 = findModId(e1.get())
                 add_quest(e2.get(), e4.get(), e6, e3.get())
                 delBtnModsAndUpdate()
+                window.destroy()
 
 
             submit_mod = tk.Button(window, text="add Module", command=register_mod_DB)
@@ -354,13 +349,6 @@ class AdminHomePage(tk.Frame):
 
         del_mod_btn = tk.Button(head, text="Del Module", font=fontBtn, command=delModuleFrame)
         del_mod_btn.grid(row=0, column=2, padx=(10, 0))
-
-
-
-
-
-
-
 
 
 
