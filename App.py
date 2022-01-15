@@ -44,7 +44,7 @@ class App(tk.Tk):
             frame = f(window, self)
             self.frames[f] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-        self.change_frame(UserHomePage)
+        self.change_frame(AdminHomePage)
 
     def change_frame(self, page):
         frame = self.frames[page]

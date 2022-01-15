@@ -25,17 +25,28 @@ import sqlite3
 class UserHomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        button = tk.Button(self, text="UserHomePAge", command=lambda: controller.change_frame(ThirdPage))
-        button.grid(row=3, column=1)
+        # def score():
+        #     return controller.getScore()
+        #
+        # def addScore():
+        #     controller.currScore += 1
+        # button = tk.Button(self, text="click", command=score)
+        # button.grid(row=4, column=1)
+        #
+        # button = tk.Button(self, text="clickToAddScore", command=addScore)
+        # button.grid(row=5, column=1)
+        for i in range(3):
+            self.columnconfigure(i, weight=1, minsize=75)
+            self.rowconfigure(i, weight=1, minsize=50)
 
-        def score():
-            return controller.getScore()
+            for j in range(0, 3):
+                frame = tk.Frame(
+                    master=self,
+                    relief=tk.RAISED,
+                    borderwidth=1
+                )
+                frame.grid(row=i, column=j, padx=5, pady=5)
 
-        def addScore():
-            controller.currScore += 1
+                label = tk.Label(master=frame, text=f"Row {i}\nColumn {j}")
+                label.pack(padx=5, pady=5)
 
-        button = tk.Button(self, text="click", command=score)
-        button.grid(row=4, column=1)
-
-        button = tk.Button(self, text="clickToAddScore", command=addScore)
-        button.grid(row=5, column=1)
