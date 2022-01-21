@@ -218,8 +218,18 @@ class AdminHomePage(tk.Frame):
                 head = tk.LabelFrame(tf_form, text="Admin Page", bg='#FBFDF4', font=fontFrame, bd=1)
                 head.pack(fill='both', expand='yes', padx=20, pady=10)
 
+
+
+
+
                 l1 = tk.Label(head, text="Module Name: ", font=ques_title)
                 l1.place(x=10, y=10)
+
+                max_score = tk.Label(head, text="Score the user should get if  answered correctly: ", font=ques_title)
+                max_score.place(x=10, y=60)
+
+                e_score = tk.Entry(head, width=5)
+                e_score.place(x=350, y=60)
 
                 e1 = tk.Entry(head, width=30)
                 e1.place(x=350, y=10)
@@ -229,54 +239,150 @@ class AdminHomePage(tk.Frame):
 
                 e2 = tk.Entry(head, width=30)
                 e2.place(x=350, y=110)
-
-                ans_l = tk.Label(head, text="Correct Answer: ", font=ques_title)
-                ans_l.place(x=10, y=150)
-
-                ans_e = tk.Entry(head, width=30)
-                ans_e.place(x=350, y=150)
-
-                if type == 'mcq' or type == 'bm':
-                    inc_ans = tk.Label(head, text="Other Possible Answer:", font=ques_title)
-                    inc_ans.place(x=10, y=200)
-
-                    inc_one = tk.Entry(head, width=30)
-                    inc_two = tk.Entry(head, width=30)
-                    inc_three = tk.Entry(head, width=30)
-                    inc_four = tk.Entry(head, width=30)
-
-                    inc_one.place(x=350, y=200)
-                    inc_two.place(x=350, y=230)
-                    inc_three.place(x=350, y=260)
-                    inc_four.place(x=350, y=290)
-
                 max_score = tk.Label(head, text="Score the user should get if  answered correctly: ", font=ques_title)
                 max_score.place(x=10, y=60)
+                if type == 'tf':
+                    ans_l = tk.Label(head, text="Correct Answer: ", font=ques_title)
+                    ans_l.place(x=10, y=150)
 
-                e_score = tk.Entry(head, width=5)
-                e_score.place(x=350, y=60)
-                def all_inc_ans(*args):
-                    list_of_inc_ans = []
-                    for t in args:
-                        if t == '':
-                            continue
-                        list_of_inc_ans.append(t)
-                    return list_of_inc_ans
+                    ans_e = tk.Entry(head, width=30)
+                    ans_e.place(x=350, y=150)
+
+                    inc_ans = 'true' if ans_e.get() == 'false' else 'false'
+
+                    submit_mod = tk.Button(head, text="add Module", \
+                                           command=lambda: register_mod_DB(e1.get(), \
+                                                                           e2.get(), \
+                                                                           ans_e.get().lower(), \
+                                                                           inc_ans, \
+                                                                           tf_form, \
+                                                                           type,
+                                                                           e_score.get()))
+                    submit_mod.place(x=130, y=320)
+
+                if type == 'mcq':
+                    # The user needs to able to choose how many answers/inc answers want to have
+                    # therefore the approach I'm going to take is as follows
+                    # 1. Let the user choose amount of answers
+                    # 2. Let the user choose amount of inc_ans
+                    # 3. Base on that display entries for the user type on them.
+                    # 4. Store ans and inc ans in DB
+                    # 5. Prompt Feedback Frame
+                    choices = [1, 2, 3]
+                    l_ans = tk.Label(head, text="Now Select the amount of answers and incorrect answers you want your question to have. Max = 5")
+                    l_ans.place(x=10, y=150)
+
+                    # Number of answers of the question
+                    l_num_ans = tk.Label(head, text="N. Answers: ")
+                    l_num_ans.place(x=10, y=180)
+
+                    l_num_ans = tk.Label(head, text="N. Inc. Answers: ")
+                    l_num_ans.place(x=300, y=180)
+
+                    ans_1 = tk.Entry(head, width=30)
+                    ans_1.place(x=100, y=220)
+
+                    ans_1 = tk.Entry(head, width=30)
+                    ans_1.place(x=100, y=220)
+                    ans_2 = tk.Entry(head, width=30)
+                    ans_2.place(x=100, y=250)
+
+                    ans_1 = tk.Entry(head, width=30)
+                    ans_1.place(x=100, y=220)
+                    ans_2 = tk.Entry(head, width=30)
+                    ans_2.place(x=100, y=250)
+                    ans_3 = tk.Entry(head, width=30)
+                    ans_3.place(x=100, y=280)
+
+                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1.place(x=300, y=220)
+
+                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1.place(x=300, y=220)
+                    inc_ans_2 = tk.Entry(head, width=30)
+                    inc_ans_2.place(x=300, y=250)
+
+                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1.place(x=300, y=220)
+                    inc_ans_2 = tk.Entry(head, width=30)
+                    inc_ans_2.place(x=300, y=250)
+                    inc_ans_3 = tk.Entry(head, width=30)
+                    inc_ans_3.place(x=300, y=280)
+
+                    def store_inc_and_corr_answers_in_db():
+                        is_to_much = [ans_1.get(), ans_2.get(), ans_3.get(), inc_ans_3.get(), inc_ans_1.get(), inc_ans_2.get()]
+                        q = 0
+                        for x in is_to_much:
+                            if x != '':
+                                q +=1
+                        if q >= 6:
+                            tk.messagebox.showerror("showerror", "You can only add 5 answers/incorrect answers at most")
+                            tf_form.destroy()
+                            return
+
+                        def grab_only_ans(*args):
+                            l = []
+                            for x in args:
+                                if x != '':
+                                    l.append(x)
+                            return ",".join(l)
+                        list_of_inc_ans = grab_only_ans(inc_ans_1.get(), inc_ans_2.get(), inc_ans_3.get())
+                        list_of_ans = grab_only_ans(ans_1.get(), ans_2.get(), ans_3.get())
 
 
+                        register_mod_DB(e1.get(),
+                                        e2.get(),
+                                        list_of_ans.lower(),
+                                        list_of_inc_ans,
+                                        tf_form,
+                                        type,
+                                        e_score.get())
 
-                # register_mod_DB(mod_name, start_quest, ans, feed):
-                submit_mod = tk.Button(head, text="add Module",\
-                                       command=lambda: register_mod_DB(e1.get(),\
-                                                                       e2.get(),\
-                                                                       ans_e.get().lower(),\
-                                                                       all_inc_ans(inc_one.get(), inc_two.get(), inc_three.get(), inc_four.get()),\
-                                                                       tf_form,\
-                                                                       type,
-                                                                       e_score.get()))
+
+                    submit_mod = tk.Button(head, text="add Module", command=lambda: store_inc_and_corr_answers_in_db())
+                    submit_mod.place(x=130, y=320)
+
+
+                if type == 'bm':
+                    # Enter 3-5 answers that others possible answers will be matched to
+
+                    t_ans = tk.Label(head, text="Enter 1-5 answers. This will answers will be used as the match for other possible answers", font=fontTitle)
+                    t_ans.place(x=10, y=150)
+
+                    p_ans_1 = tk.Entry(head, width=30)
+                    p_ans_2 = tk.Entry(head, width=30)
+                    p_ans_3 = tk.Entry(head, width=30)
+                    p_ans_4 = tk.Entry(head, width=30)
+                    p_ans_5 = tk.Entry(head, width=30)
+
+                    p_ans_1.place(x=10,y=180)
+                    p_ans_2.place(x=10,y=210)
+                    p_ans_3.place(x=10,y=240)
+                    p_ans_4.place(x=10,y=270)
+                    p_ans_5.place(x=10,y=300)
+
+
+                    def phase_1_of_bma():
+
+                        def grab_only_ans(*args):
+                            l = []
+                            for x in args:
+                                if x != '':
+                                    l.append(x)
+                            return ",".join(l)
+                        list_of_ans = grab_only_ans(p_ans_1.get(), p_ans_2.get(), p_ans_3.get(), p_ans_4.get(), p_ans_5.get())
+                        register_mod_DB(
+                            e1.get(),
+                            e2.get(),
+                            list_of_ans.lower(),
+                            '',
+                            tf_form,
+                            type,
+                            e_score.get()
+                        )
+
+                submit_mod = tk.Button(head, text="Continue", command=lambda: phase_1_of_bma())
                 submit_mod.place(x=130, y=320)
-
-
 
             options = tk.LabelFrame(head, text="Options: ", font=opt_title)
             options.pack(fill='both', expand='yes', padx=20, pady=100)
@@ -350,6 +456,8 @@ class AdminHomePage(tk.Frame):
                 if sqliteConnection:
                     sqliteConnection.close()
                     print("The SQLite connection is closed")
+
+
         def add_feed_frame(quest_id, answers, prevForm, m_id):
 
             prevForm.destroy()
@@ -488,30 +596,28 @@ class AdminHomePage(tk.Frame):
             #
             # Add otherAnswer and times attribute when adding to DB
             if typeOfQuestion == 'tf':
-                true_false = 'true' if ans == 'false' else 'false'
                 # ADD MODULE TO DB
                 onlyDeleteBtnModules()
                 add_mod(mod_name)
                 e6 = findModId(mod_name)
                 # ADD QUESTIONS TO DB
-                add_quest(start_quest, e6, true_false, ans, mark, typeOfQuestion)
+                add_quest(start_quest, e6, inc_ans, ans, mark, typeOfQuestion)
                 delBtnModsAndUpdate()
                 # ADD FEEDBACK TO DB
-                all_ans = [ans, true_false]
+                all_ans = [ans, inc_ans]
                 # hacky way of inserting question id to the feedback
                 add_feed_frame(e6, all_ans, currForm, e6)
             elif typeOfQuestion == 'mcq':
-                all_ans = inc_ans
-                all_ans.append(ans)
+                all_ans = inc_ans.split(',') + ans.split(',')
                 onlyDeleteBtnModules()
                 add_mod(mod_name)
                 e6 = findModId(mod_name)
-                add_quest(start_quest, e6, ",".join(inc_ans), ans, mark, typeOfQuestion)
+                add_quest(start_quest, e6, inc_ans, ans, mark, typeOfQuestion)
                 delBtnModsAndUpdate()
                 add_feed_frame(e6, all_ans, currForm, e6)
-            elif typeOfQuestion == 'mb':
+            elif typeOfQuestion == 'bm':
                 # NEED TO CONSIDER TWO THINGS
-                # The Admind can add some options
+                # The Admin can add some options
                 # Each of these options can have some answers
                 # the app should store these answers and options
                 # How can we link these options and answer to determine which belongs to which?
@@ -519,6 +625,8 @@ class AdminHomePage(tk.Frame):
                         # This way we can just fetch this entities and compare them with what the user matched in the app.
                 # Idea 2: ADD an  "A" To the beginning of each option and Answer so we know they are connected.
                         # We would just need to check the first letter to determine the correctness of the user match.
+                print(ans, inc_ans)
+
                 return
 
         add_mod_btn = tk.Button(head, text="New Module", font=fontBtn, command=chooseTypeOfQuestion)
@@ -545,7 +653,6 @@ class AdminHomePage(tk.Frame):
             menu = window.nametowidget(chooseTest.menuname)
             menu.config(font=('Arial', 10, 'bold'))
             chooseTest.place(x=20, y=20)
-
 
             def delAllFeedbackFromDB(moduleId):
                 # In order to delete a module,
