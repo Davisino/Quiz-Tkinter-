@@ -1,0 +1,14 @@
+Bug1:
+When the feedback was pushed to the DB, each row wasnt getting
+the right quest_id. It turned out I was always passing the same
+module id as a parameter in a function so that each feedback quest_id 
+column would always have the same key as the module. 
+To Solve this, I had to pass the current key of the question, so
+First I had to find the question id of this question and then pass
+it as a parameter. 
+Bug2:
+When looking up for fields on the database and also pushing data to
+the DB I was encounter a bug that every time I did not convert
+the integers into a string, they would not be pushed. To fixed this I 
+simply had to surround each integer variable with str() method so that
+it gets converted into a string.
