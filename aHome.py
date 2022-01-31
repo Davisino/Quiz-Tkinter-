@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
-import sqlite3
-
+from tkinter import messagebox
+from sql_commads import *
 
 class AdminHomePage(tk.Frame):
     def __init__(self, parent, controller):
@@ -26,282 +26,6 @@ class AdminHomePage(tk.Frame):
         titleLabel = tk.Label(head, text="Current Modules", font=fontTitle)
         titleLabel.grid(row=0, column=0, pady=20)
 
-        # ----------- USEFEUL FUNCTIONS ---------
-        # From here, you will see some functions
-        # that I consider very useful to do the job on the quiz app.
-        # It saved me a lot of time, because I had not to code manually sqlite commands anymore.
-        # I would just call the function and pass the desired arguments/parameters.
-        def findModId(module_name):
-            conn = sqlite3.connect('./Databases/quiz_storage.db')
-            cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "';")
-            row = cursor.fetchall()
-            print(str(row[0][0]))
-            return str(row[0][0])
-
-        def fetchModules():
-            modules = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "SELECT mod_name from Modules"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                modules = count.fetchall()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch data", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-            return modules
-
-        def fetch_all_quest(curr_mod_name):
-            m_id = findModId(curr_mod_name)
-            print(m_id, 'module id')
-            questions = []
-            modules = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "SELECT quest_name from Questions " \
-                                      "where mod_id = " + m_id
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                modules = count.fetchall()
-
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch questions", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-            for i in range(len(modules)):
-                questions.append(modules[i][0])
-            return questions
-
-        def get_fathers_from_children(answers):
-            fathers = []
-
-            for i in range(len(answers)):
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-
-                    sqlite_insert_query = "SELECT bma_father from BestMatchAns " \
-                                          "where bma_child = " + "'" + answers[i] + "'"
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    result = count.fetchone()[0]
-                    fathers.append(result)
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to select father from child ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
-            return fathers
-
-        def find_mod_quest_id(quest_name):
-            result = []
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "SELECT quest_id, mod_id from Questions " \
-                                      "where quest_name = " + "'" + quest_name + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchall()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to select quest and mod id ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-            return [int(result[0][0]), int(result[0][1])]
-
-        def find_quest_id(quest_name):
-
-            result = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "SELECT quest_id from Questions " \
-                                      "where quest_name = " + "'" + quest_name + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to select quest id ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-            return result[0]
-
-        def find_inc_ans_from_quest(quest_id):
-            result = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Select possible_answers from Questions " \
-                                      "where quest_id = '" + str(quest_id) + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchall()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch all answers from question ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-            ans = result[0][0]
-            return ans.split(',')
-
-        def find_quest_mark(quest_id):
-            result = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "SELECT quest_mark from Questions " \
-                                      "where quest_id = " + "'" + str(quest_id) + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to select quest id ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-            return result[0]
-
-        def find_ans_from_quest(quest_id):
-            result = ''
-            ans = []
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Select answer from Questions " \
-                                      "where quest_id = '" + str(quest_id) + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchall()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch all answers from question ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-            for x in result:
-                ans.append(x[0])
-            return ans
-
-        def update_quest(quest_id, column, new_answer):
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Update Questions " \
-                                      "Set " + column + " = '" + new_answer + "' " \
-                                                                              "Where quest_id = '" + str(quest_id) + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch all answers from question ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-        def del_feed_quest_from_db(q_id):
-
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Delete from Feedback " \
-                                      "Where quest_id = " + str(q_id)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to delete feedback from db", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-        def del_bma_quest_from_db(q_id):
-
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Delete from BestMatchAns " \
-                                      "Where quest_id = " + str(q_id)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to delete bms answers from db ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-        def del_quest_execute(q_id):
-
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Delete from Questions " \
-                                      "where quest_id = " + str(q_id)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to delete question from db ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
 
         def update_option_menu(m_quest_to_del, curr_mod_name, quest_to_del):
             m = m_quest_to_del['menu']
@@ -309,27 +33,6 @@ class AdminHomePage(tk.Frame):
             list_of_quest = fetch_all_quest(curr_mod_name)
             for string in list_of_quest:
                 m.add_command(label=string, command=lambda value=string: quest_to_del.set(value))
-
-        def find_quest_type(quest_name):
-            result = ''
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-
-                sqlite_insert_query = "Select quest_type from Questions " \
-                                      "where quest_name = '" + quest_name + "'"
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                result = count.fetchone()
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to fetch type of quest ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-            return result[0]
 
         def onlyDeleteBtnModules():
             row = 2
@@ -374,6 +77,12 @@ class AdminHomePage(tk.Frame):
             e_quest_title = tk.Entry(m_quest_features, width=30)
             e_quest_title.place(x=180, y=60)
             e_quest_title.insert(tk.END, quest_name)
+
+            quest_t_btn = tk.Button(m_quest_features, text="change", command=lambda: update_quest(
+                quest_id,
+                'quest_name',
+                e_quest_title.get()))
+            quest_t_btn.place(x=320, y=60)
 
             if type_of_q == 'tf':
                 l_ans = tk.Label(m_quest_features, text="Answer: ", font=fontTitle)
@@ -471,6 +180,7 @@ class AdminHomePage(tk.Frame):
                     e_inc_ans_3 = tk.Entry(m_quest_features, width=20)
                     e_inc_ans_3.place(x=10, y=340)
                     e_inc_ans_3.insert(tk.END, get_inc_ans_tf[2])
+
                 def gather_inc_ans():
                     if len_of_inc_ans == 1:
                         return ",".join([e_inc_ans_1.get()])
@@ -510,6 +220,132 @@ class AdminHomePage(tk.Frame):
                                     command=lambda: update_quest(quest_id, 'quest_mark', e_quest_mark.get()))
                 q_m_btn.place(x=220, y=410)
 
+            if type_of_q == 'bm':
+                possible_ans = tk.Label(m_quest_features, text="Possible Answers: ", font=fontTitle)
+                possible_ans.place(x=10, y=100)
+                get_inc_ans = find_inc_ans_from_quest(quest_id)
+                get_ans = ",".join(find_ans_from_quest(quest_id)).split(',')
+                l_inc = len(get_inc_ans)
+
+                if l_inc == 1:
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1.place(x=10, y=130)
+                    e_p_ans_1.insert(tk.END, get_inc_ans[0])
+
+                    bma_e_p_ans1 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans1.set(get_father_from_child(get_inc_ans[0]))  # default value
+
+                    curr_bma_e_p_ans1 = tk.OptionMenu(m_quest_features, bma_e_p_ans1, *get_ans)
+                    curr_bma_e_p_ans1.config(font=fontBtn)
+                    curr_1 = m_quest_features.nametowidget(curr_bma_e_p_ans1.menuname)
+                    curr_1.config(font=fontBtn)
+                    curr_bma_e_p_ans1.place(x=150, y=130)
+
+                if l_inc == 2:
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1.place(x=10, y=130)
+                    e_p_ans_1.insert(tk.END, get_inc_ans[0])
+
+                    e_p_ans_2 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_2.place(x=10, y=180)
+                    e_p_ans_2.insert(tk.END, get_inc_ans[1])
+
+                    bma_e_p_ans1 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans1.set(get_father_from_child(get_inc_ans[0]))  # default value
+
+                    curr_bma_e_p_ans1 = tk.OptionMenu(m_quest_features, bma_e_p_ans1, *get_ans)
+                    curr_bma_e_p_ans1.config(font=fontBtn)
+                    curr_1 = m_quest_features.nametowidget(curr_bma_e_p_ans1.menuname)
+                    curr_1.config(font=fontBtn)
+                    curr_bma_e_p_ans1.place(x=150, y=130)
+
+                    bma_e_p_ans2 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans2.set(get_father_from_child(get_inc_ans[1]))  # default value
+
+                    curr_bma_e_p_ans2 = tk.OptionMenu(m_quest_features, bma_e_p_ans2, *get_ans)
+                    curr_bma_e_p_ans2.config(font=fontBtn)
+                    curr_2 = m_quest_features.nametowidget(curr_bma_e_p_ans2.menuname)
+                    curr_2.config(font=fontBtn)
+                    curr_bma_e_p_ans2.place(x=150, y=180)
+
+                if l_inc == 3:
+
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1.place(x=10, y=130)
+                    e_p_ans_1.insert(tk.END, get_inc_ans[0])
+
+                    e_p_ans_2 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_2.place(x=10, y=180)
+                    e_p_ans_2.insert(tk.END, get_inc_ans[1])
+
+                    e_p_ans_3 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_3.place(x=10, y=230)
+                    e_p_ans_3.insert(tk.END, get_inc_ans[2])
+
+                    bma_e_p_ans1 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans1.set(get_father_from_child(get_inc_ans[0]))  # default value
+
+                    curr_bma_e_p_ans1 = tk.OptionMenu(m_quest_features, bma_e_p_ans1, *get_ans)
+                    curr_bma_e_p_ans1.config(font=fontBtn)
+                    curr_1 = m_quest_features.nametowidget(curr_bma_e_p_ans1.menuname)
+                    curr_1.config(font=fontBtn)
+                    curr_bma_e_p_ans1.place(x=150, y=130)
+
+                    bma_e_p_ans2 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans2.set(get_father_from_child(get_inc_ans[1]))  # default value
+
+                    curr_bma_e_p_ans2 = tk.OptionMenu(m_quest_features, bma_e_p_ans2, *get_ans)
+                    curr_bma_e_p_ans2.config(font=fontBtn)
+                    curr_2 = m_quest_features.nametowidget(curr_bma_e_p_ans2.menuname)
+                    curr_2.config(font=fontBtn)
+                    curr_bma_e_p_ans2.place(x=150, y=180)
+
+                    bma_e_p_ans3 = tk.StringVar(m_quest_features)
+                    bma_e_p_ans3.set(get_father_from_child(get_inc_ans[2]))  # default value
+
+                    curr_bma_e_p_ans3 = tk.OptionMenu(m_quest_features, bma_e_p_ans3, *get_ans)
+                    curr_bma_e_p_ans3.config(font=fontBtn)
+                    curr_3 = m_quest_features.nametowidget(curr_bma_e_p_ans3.menuname)
+                    curr_3.config(font=fontBtn)
+                    curr_bma_e_p_ans3.place(x=150, y=230)
+
+                    def update_bma_ans():
+                        p_ans = []
+                        ans = []
+                        m_id = findModId(mod_name)
+
+                        if l_inc == 1:
+                            p_ans.append(e_p_ans_1.get())
+                            ans.append(bma_e_p_ans1.get())
+                        if l_inc == 2:
+                            p_ans.append(e_p_ans_1.get())
+                            p_ans.append(e_p_ans_2.get())
+                            ans.append(bma_e_p_ans1.get())
+                            ans.append(bma_e_p_ans2.get())
+                        if l_inc == 3:
+                            p_ans.append(e_p_ans_1.get())
+                            p_ans.append(e_p_ans_2.get())
+                            p_ans.append(e_p_ans_3.get())
+                            ans.append(bma_e_p_ans1.get())
+                            ans.append(bma_e_p_ans2.get())
+                            ans.append(bma_e_p_ans3.get())
+
+                        i = 0
+
+                        del_bma_rows(quest_id)
+
+                        while i < len(p_ans):
+                            add_ans_to_bma(quest_id, ans[i], p_ans[i], m_id)
+                            i += 1
+                        # return
+                        del_feed_quest_from_db(quest_id)
+                        add_feed_frame(quest_id, p_ans, False, m_id, True)
+                        update_quest(quest_id, 'possible_answers', ",".join(p_ans))
+
+                    btn_sub = tk.Button(m_quest_features, text="Submit", command=lambda:
+                    update_bma_ans())
+                    btn_sub.place(x=10, y=260)
+
         # Change mod name frame
         def change_mod_name(curr_mod_name):
             window = tk.Tk()
@@ -528,28 +364,6 @@ class AdminHomePage(tk.Frame):
                                                        curr_mod_name,
                                                        curr_quest_to_del))
             refresh_btn.place(x=580, y=10)
-
-            def update_mod_name_in_db(curr_name, desired_name):
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-
-                    sqlite_insert_query = "Update Modules set mod_name = " + \
-                                          "'" + desired_name + "'" + \
-                                          " where mod_name = " + "'" + \
-                                          curr_name + "';"
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("record Updated")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to Update Data Into Sqlite3", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
 
             def execute_mod_change(curr_name, desired_name):
 
@@ -677,8 +491,16 @@ class AdminHomePage(tk.Frame):
                 family="Arial",
                 size=60
             )
-            l1 = tk.Label(head, text="Select a type of questions for the module", font=title)
-            l1.place(x=20, y=50)
+            if curr_mod_name:
+                l1 = tk.Label(head, text="Select a type of question to add: True/False, MultipleChoice or BestMatch",
+                              font=title)
+                l1.place(x=20, y=50)
+            else:
+                l1 = tk.Label(head,
+                              text="You are creating a new module, so why don't create it along with an starting question?" +
+                                   " \n" + "Select a type of question to add: True/False, MultipleChoice or BestMatch",
+                              font=title)
+                l1.place(x=20, y=50)
 
             def TypeQuest(type, mod_name=False):
                 # TRUE OR FALSE FORM
@@ -740,7 +562,7 @@ class AdminHomePage(tk.Frame):
                 def is_mod_name():
                     if mod_name:
                         return mod_name
-                    return e1.get()
+                    return e1.get().lower()
 
                 if type == 'tf':
                     ans_l = tk.Label(head, text="Correct Answer: ", font=ques_title)
@@ -749,18 +571,37 @@ class AdminHomePage(tk.Frame):
                     ans_e = tk.Entry(head, width=30)
                     ans_e.place(x=350, y=150)
 
-                    inc_ans = 'true' if ans_e.get() == 'false' else 'false'
+                    def register_tf():
+
+                        if ans_e.get().lower() == 'false' or ans_e.get().lower() == 'true':
+                            inc_ans = 'true' if ans_e.get().lower() == 'false' else 'false'
+
+                            does_mod_exist_in_db = findModId(is_mod_name())
+
+                            if does_mod_exist_in_db and mod_name is False:
+                                messagebox.showinfo("Error", "This module name already exists. "
+                                                             "You will need to use another name.", parent=tf_form)
+                                return
+                            # If it passes all the checks, Then you can create the module.
+                            register_mod_DB(is_mod_name(),
+                                            e2.get(),
+                                            ans_e.get().lower(),
+                                            inc_ans,
+                                            tf_form,
+                                            type,
+                                            e_score.get(),
+                                            exist_mod
+                                            )
+                        else:
+                            messagebox.showinfo("Error", "Please enter a false/true answer.", parent=tf_form)
+                            return
+
+
+
 
                     submit_mod = tk.Button(head, text="add Module",
-                                           command=lambda: register_mod_DB(is_mod_name(),
-                                                                           e2.get(),
-                                                                           ans_e.get().lower(),
-                                                                           inc_ans,
-                                                                           tf_form,
-                                                                           type,
-                                                                           e_score.get(),
-                                                                           exist_mod
-                                                                           ))
+                                           command=lambda: register_tf())
+
                     submit_mod.place(x=130, y=320)
 
                 if type == 'mcq':
@@ -814,6 +655,12 @@ class AdminHomePage(tk.Frame):
                     inc_ans_3.place(x=300, y=280)
 
                     def store_inc_and_corr_answers_in_db():
+                        does_mod_exist_in_db = findModId(is_mod_name())
+
+                        if does_mod_exist_in_db and mod_name is False:
+                            messagebox.showinfo("Error", "This module name already exists. "
+                                                         "You will need to use another name.", parent=tf_form)
+                            return
                         is_to_much = [ans_1.get(), ans_2.get(), ans_3.get(), inc_ans_3.get(), inc_ans_1.get(),
                                       inc_ans_2.get()]
                         q = 0
@@ -868,6 +715,12 @@ class AdminHomePage(tk.Frame):
                     p_ans_5.place(x=10, y=340)
 
                     def phase_1_of_bma():
+                        does_mod_exist_in_db = findModId(is_mod_name())
+
+                        if does_mod_exist_in_db and mod_name is False:
+                            messagebox.showinfo("Error", "This module name already exists. "
+                                                         "You will need to use another name.", parent=tf_form)
+                            return
                         def grab_only_ans(*args):
                             l = []
                             for x in args:
@@ -903,92 +756,10 @@ class AdminHomePage(tk.Frame):
                             command=lambda: TypeQuest('bm', curr_mod_name))
             op3.pack(side=tk.LEFT)
 
-        # SQLITE COMMANDS
-        def add_feed_to_DB(q_id, name, text, m_id):
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
 
-                sqlite_insert_query = "INSERT INTO Feedback (quest_id, feed_ans_name, feed_text, mod_id)\
-                                                        Values " + "(" + str(q_id) + ", '" + name + "' , '" \
-                                      + text + "'," + str(m_id) + ");"
-                print(sqlite_insert_query)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                print("Feedback of Answer Succesfully Inserted")
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to insert feedback of answer into Sqlite ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
 
-        def add_mod(mod_name):
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
 
-                sqlite_insert_query = "INSERT INTO Modules (mod_name) Values " + "('" + mod_name + "')"
-                print(sqlite_insert_query)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                print("Moduled added succesfully")
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to insert Module into sqlite table", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
 
-            # Register Questions from Module
-
-        def add_quest(quest_name, quest_mod_id, possible_answers, answer, mark, quest_type):
-
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-                sqlite_insert_query = "INSERT INTO Questions (quest_name," \
-                                      " mod_id, quest_times, answer, possible_answers, quest_mark, quest_type)" \
-                                      " Values " + "('" + quest_name + "'" + ",'" + quest_mod_id + "'" + \
-                                      ", '" + str(0) + "'" + ",'" + answer + "'" + ",'" + possible_answers + \
-                                      "', '" + mark + "', '" + quest_type + "');"
-                print(sqlite_insert_query)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                print("Question added succesfully")
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to insert question into sqlite ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
-
-        def add_bma_ans(quest_id, father, child, mod_id):
-            try:
-                sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                cursor = sqliteConnection.cursor()
-                print("Succesfully connected to SQLite")
-                sqlite_insert_query = "INSERT INTO BestMatchAns (quest_id," \
-                                      " bma_father, bma_child, mod_id)" \
-                                      " Values " + "('" + str(quest_id) + "'" + ",'" + father + "'" + \
-                                      ", '" + child + "'" + ",'" + str(mod_id) + "');"
-                print(sqlite_insert_query)
-                count = cursor.execute(sqlite_insert_query)
-                sqliteConnection.commit()
-                print("bma answer added succesfully")
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Failed to insert bma answer into sqlite ", error)
-            finally:
-                if sqliteConnection:
-                    sqliteConnection.close()
-                    print("The SQLite connection is closed")
 
         # BMA FRAME TO GET ALL POSSIBLE ANSWERS
         def get_inc_ans_from_bma_frame(quest, typeofQuest, ans, currForm):
@@ -1071,28 +842,6 @@ class AdminHomePage(tk.Frame):
             menu_5.config(font=fontBtn)
             curr_bma_ans_5_c.place(x=200, y=245)
 
-            def update_bms_db_poss_ans(children, q_id):
-                c = ",".join(children)
-
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-                    sqlite_insert_query = "UPDATE QUESTIONS " \
-                                          "SET possible_answers = " + "'" + c + "'" + " where quest_id = " + str(q_id)
-
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("bma possible answer updated succesfully")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to insert bma possible answer child into sqlite ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
             def execute_bma_add():
                 q_id, m_id = find_mod_quest_id(quest)
                 answers = []
@@ -1119,7 +868,8 @@ class AdminHomePage(tk.Frame):
             bma_btn.place(x=200, y=320)
 
         def add_feed_frame(quest_id, answers, prevForm, m_id, bma=False):
-            prevForm.destroy()
+            if prevForm is not False:
+                prevForm.destroy()
             feed_form = tk.Tk()
 
             fontFrame = tkFont.Font(
@@ -1375,6 +1125,10 @@ class AdminHomePage(tk.Frame):
         #     3. Close window frame and DeleteAndUpdate
         #
         def delModuleFrame():
+            are_there_modules = fetchModules()
+            if len(are_there_modules) == 0:
+                messagebox.showinfo("Error", "There are not modules available to delete." + "\n" + "Add modules first.")
+                return
             window = tk.Tk()
             window.resizable(0, 0)
             window.geometry("320x200")
@@ -1390,107 +1144,6 @@ class AdminHomePage(tk.Frame):
             menu = window.nametowidget(chooseTest.menuname)
             menu.config(font=('Arial', 10, 'bold'))
             chooseTest.place(x=20, y=20)
-
-            def delAllFeedbackFromDB(moduleId):
-                # In order to delete a module,
-                # we first need to delete all
-                # the feedback & questions from that
-                # module because they are
-                # connected throught a
-                # foreign key and thus
-                # cannot be deleted without
-                # first all questions are removed.
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-
-                    sqlite_insert_query = "DELETE FROM Feedback WHERE mod_id = " + moduleId + ";"
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("Feedback Succesfully Deleted")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to Delete Feedback into Sqlite ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
-            def delAllBmaFromDB(moduleId):
-                # In order to delete a module,
-                # we first need to delete all
-                # the quesions & feedback & bma if it has from that
-                # module because they are
-                # connected throught a
-                # foreign key and thus
-                # cannot be deleted without
-                # first all questions are removed.
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-
-                    sqlite_insert_query = "DELETE FROM BestMatchAns WHERE mod_id = " + moduleId + ";"
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("bma answers Succesfully Deleted")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to Delete bma answers ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
-            def delAllQuestionsFromDB(moduleId):
-                # In order to delete a module,
-                # we first need to delete all
-                # the quesions & feedback from that
-                # module because they are
-                # connected throught a
-                # foreign key and thus
-                # cannot be deleted without
-                # first all questions are removed.
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Succesfully connected to SQLite")
-
-                    sqlite_insert_query = "DELETE FROM Questions WHERE mod_id = " + moduleId + ";"
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("Questions Succesfully Deleted")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to Delete questions into Sqlite ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
-            def delModFromDB(moduleName):
-                try:
-                    sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
-                    cursor = sqliteConnection.cursor()
-                    print("Successfully connected to SQLite")
-
-                    sqlite_insert_query = "DELETE FROM Modules WHERE mod_name = '" + moduleName + "';"
-                    print(sqlite_insert_query)
-                    count = cursor.execute(sqlite_insert_query)
-                    sqliteConnection.commit()
-                    print("Module Successfully Deleted")
-                    cursor.close()
-                except sqlite3.Error as error:
-                    print("Failed to Delete questions into Sqlite ", error)
-                finally:
-                    if sqliteConnection:
-                        sqliteConnection.close()
-                        print("The SQLite connection is closed")
-
             def deleteModule():
                 # ----------------MAIN DELETE MODULE FUNCTION--------------
 

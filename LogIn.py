@@ -143,3 +143,6 @@ class LogInPage(tk.Frame):
         registerBtn = tk.Button(self, text="Register", bg='#02203c', font=fontBG,fg="white",
                                 command=registerUser)
         registerBtn.place(x=550, y=170)
+
+
+

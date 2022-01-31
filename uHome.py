@@ -1,5 +1,5 @@
 import tkinter as tk
-from Third import ThirdPage
+
 import sqlite3
 
 # TO-DO List

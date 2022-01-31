@@ -1,8 +1,0 @@
-When looking at the feedback table to generate the 
-feedback for the answers of the user.
-
-Look in the feedback table where quest_id == current question id
-and feed_ans = *answers
-
-This way we are going to get each feedback for each answer
-and be able to display it on the feedback page.
