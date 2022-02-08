@@ -6,32 +6,11 @@ from tkinter import messagebox
 import sqlite3
 import tkinter.font as tkFont
 
-import sys
-import os
 
 
-# HOW TO HANDLE THE ADMIN UI VS NORMAL USER UI?
-# Idea 1: create a database to store all
-# the modules with their respective questions
-# Then by default there will be 5 modules and 5 questions for each module.
-# Admin user have the power to MODIFY the database.
-# Example:
-# Admin user can delete/add questions
-# i. Delete:
-# admin will just need to click on a little button to the right of each question which will delete the question SOMEHOW
-# ii. ADD:
-# admin will click on the + sign and immediately a new window will pop up for the user to add the new question
 
-# admin user can delete/add modules
-# i. Delete:
-# admin will just click on the little button to the right of each module on the -Modules Frame- which will delete the module and its questions SOMEHOW.
-# ii. ADD:
-# admin will click on the + sign button and immediately a new window will pop up for the user to add the new module and 5 default questions.
 
-# Normal user select module
-
-# *args store all arguments in tuple
-# **kwargs store key value pairs.
+# ---------------------------SQLITE COMMANDS ----------------------------
 def findModId(module_name):
     conn = sqlite3.connect('./Databases/question_bank.db')
     cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "';")
@@ -160,7 +139,7 @@ def find_quest_id(quest_name):
             sqliteConnection.close()
             print("The SQLite connection is closed")
 
-    return result[0]
+    return result[0] if result is not None else []
 
 
 def find_inc_ans_from_quest(quest_id):
@@ -300,7 +279,10 @@ def del_bma_rows(q_id):
     return
 
 
-def update_quest(quest_id, column, new_answer):
+def update_quest(quest_id, column, new_answer, frame=False):
+    if new_answer == '':
+        messagebox.showinfo("Error", "A field must have been left blank. Please fill the fields you edited.", parent=frame)
+        return
     try:
         sqliteConnection = sqlite3.connect('./Databases/question_bank.db')
         cursor = sqliteConnection.cursor()
@@ -403,6 +385,7 @@ def find_quest_type(quest_name):
         if sqliteConnection:
             sqliteConnection.close()
             print("The SQLite connection is closed")
+
     return result[0]
 
 
@@ -652,22 +635,13 @@ def delModFromDB(moduleName):
             print("The SQLite connection is closed")
     return
 
+# ---------------------END OF SQLITE COMMANDS----------------------
 
 class LogInPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         # --------------------------LOGIN---------------------------------
-        fontBG = tkFont.Font(
-            family="Arial",
-            size=16,
-            weight='bold',
-        )
 
-        font_small = tkFont.Font(
-            family="Arial",
-            size=12,
-            weight='bold',
-        )
         """
         The idea came from: https://www.youtube.com/watch?v=tpGjHRDEjCE&t=1153s&ab_channel=IGTechTeam
         I used part of the code from the video to develop the essential log in page that would
@@ -675,12 +649,19 @@ class LogInPage(tk.Frame):
         I fully understand the small parts I replicated from the video.
         
         """
+
+
         border = tk.LabelFrame(self, text="Log In", fg="white", bg='#5D9DE5', font=('Helvetica', 18, 'bold'), bd=1)
         border.pack(fill='both', expand='yes', padx=20, pady=150)
 
         username = tk.Label(border, text="username", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
         username.place(x=50, y=20)
 
+
+
+        exit_l = tk.Button(self, text="Exit", fg="white", bg='#5D9DE5', font=('Helvetica', 20, 'bold'),
+                           command=lambda: controller.exitSystem())
+        exit_l.place(x=550, y=490)
         userInput = tk.Entry(border, width=30, bd=5)
         userInput.place(x=180, y=20)
 
@@ -689,9 +670,13 @@ class LogInPage(tk.Frame):
 
         passInput = tk.Entry(border, show="*", width=30, bd=5)
         passInput.place(x=180, y=80)
-        testing = tk.Label(border, text="To enter the admin page use: admin as username and admin as password",
+        enterAdmin= tk.Label(border, text="To enter the admin page use: admin as username and admin as password",
                            fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
-        testing.place(x=20, y=200)
+        enterAdmin.place(x=20, y=200)
+
+        enterUser = tk.Label(border, text="To enter the user page use: user as username and user as password",
+                              fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
+        enterUser.place(x=20, y=250)
 
         # -------------------------------SUBMIT LOGIN--------------------------
         def verify():
@@ -824,6 +809,10 @@ class UserHomePage(tk.Frame):
         #
         # button = tk.Button(self, text="clickToAddScore", command=addScore)
         # button.grid(row=5, column=1)
+        def closeSystem():
+            self.destroy()
+        exit_l = tk.Button(self, text="Exit", fg="white", bg='#5D9DE5', font=('Helvetica', 20, 'bold'), command=lambda:closeSystem())
+        exit_l.place(x=550, y=10)
         for i in range(3):
             self.columnconfigure(i, weight=1, minsize=75)
             self.rowconfigure(i, weight=1, minsize=50)
@@ -844,31 +833,17 @@ class AdminHomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.isActive = False
-        fontFrame = tkFont.Font(
-            family="Arial",
-            size=26,
-            weight='bold')
-        fontBtn = tkFont.Font(
-            family="Arial",
-            size=16,
-            weight='bold',
-        )
-        fontTitle = tkFont.Font(
-            family="Arial",
-            size=22,
-        )
 
-        font_small = tkFont.Font(
-            family="Arial",
-            size=12,
-            weight='bold',
-        )
 
         head = tk.LabelFrame(self, text="Admin Page", fg="white", bg='#5D9DE5', font=('Helvetica', 28, 'bold'), bd=1)
         head.pack(fill='both', expand='yes', padx=20, pady=10)
 
         titleLabel = tk.Label(head, text="Current Modules", fg="white", bg='#5D9DE5', font=('Helvetica', 20, 'bold'))
         titleLabel.grid(row=0, column=0, pady=20)
+        def closeSystem():
+            self.destroy()
+        exit_l = tk.Button(head, text="Exit", fg="white", bg='#5D9DE5', font=('Helvetica', 20, 'bold'), command=lambda:closeSystem())
+        exit_l.place(x=550, y=540)
 
         def update_option_menu(m_quest_to_del, curr_mod_name, quest_to_del):
             m = m_quest_to_del['menu']
@@ -917,51 +892,53 @@ class AdminHomePage(tk.Frame):
             quest_title = tk.Label(m_quest_features, text="Question Name: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
             quest_title.place(x=10, y=60)
 
-            e_quest_title = tk.Entry(m_quest_features, width=30)
+            e_quest_title = tk.Entry(m_quest_features, width=30, bd=5)
             e_quest_title.place(x=150, y=60)
             e_quest_title.insert(tk.END, quest_name)
 
             quest_t_btn = tk.Button(m_quest_features,fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'), text="change", command=lambda: update_quest(
                 quest_id,
                 'quest_name',
-                e_quest_title.get()))
+                e_quest_title.get(),
+                m_quest_features
+                ))
             quest_t_btn.place(x=360, y=57)
 
             if type_of_q == 'tf':
                 l_ans = tk.Label(m_quest_features, text="Answer: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 l_ans.place(x=10, y=100)
                 get_ans_tf = find_ans_from_quest(quest_id)
-                e_ans_tf = tk.Entry(m_quest_features, width=20)
+                e_ans_tf = tk.Entry(m_quest_features, width=20, bd=5)
                 e_ans_tf.place(x=10, y=130)
                 e_ans_tf.insert(tk.END, get_ans_tf)
                 # Update answer column
                 ans_tf_btn = tk.Button(m_quest_features, text="Apply", width=10,
-                                       command=lambda: update_quest(quest_id, 'answer', e_ans_tf.get()))
+                                       command=lambda: update_quest(quest_id, 'answer', e_ans_tf.get(), m_quest_features))
                 ans_tf_btn.place(x=10, y=160)
 
                 get_inc_ans_tf = find_inc_ans_from_quest(quest_id)
                 l_inc_ans = tk.Label(m_quest_features, text="Incorrect Answer: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 l_inc_ans.place(x=10, y=200)
 
-                e_inc_ans = tk.Entry(m_quest_features, width=20)
+                e_inc_ans = tk.Entry(m_quest_features, width=20, bd=5)
                 e_inc_ans.place(x=10, y=230)
                 e_inc_ans.insert(tk.END, get_inc_ans_tf)
                 # Update possible answer column
 
                 ans_tf_btn = tk.Button(m_quest_features, text="Apply", width=10,
-                                       command=lambda: update_quest(quest_id, 'possible_answer', e_inc_ans.get()))
+                                       command=lambda: update_quest(quest_id, 'possible_answer', e_inc_ans.get(), m_quest_features))
                 ans_tf_btn.place(x=10, y=260)
 
                 # Update question Mark
                 get_quest_mark = find_quest_mark(quest_id)
                 l_quest_mark = tk.Label(m_quest_features, text="Question Mark: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 l_quest_mark.place(x=10, y=290)
-                e_quest_mark = tk.Entry(m_quest_features, width=8)
+                e_quest_mark = tk.Entry(m_quest_features, width=8, bd=5)
                 e_quest_mark.place(x=10, y=320)
                 e_quest_mark.insert(tk.END, get_quest_mark)
 
                 q_m_btn = tk.Button(m_quest_features, text="Apply", width=10,
-                                    command=lambda: update_quest(quest_id, 'quest_mark', e_quest_mark.get()))
+                                    command=lambda: update_quest(quest_id, 'quest_mark', e_quest_mark.get(), m_quest_features))
                 q_m_btn.place(x=10, y=350)
             if type_of_q == 'mcq':
                 l_ans = tk.Label(m_quest_features, text="Answer: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
@@ -969,27 +946,27 @@ class AdminHomePage(tk.Frame):
                 get_ans = find_ans_from_quest(quest_id)
                 len_of_ans = len(get_ans)
                 if len_of_ans == 1:
-                    e_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_1.place(x=10, y=130)
                     e_ans_1.insert(tk.END, get_ans[0])
                 elif len_of_ans == 2:
-                    e_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_1.place(x=10, y=130)
                     e_ans_1.insert(tk.END, get_ans[0])
 
-                    e_ans_2 = tk.Entry(m_quest_features, width=20)
+                    e_ans_2 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_2.place(x=10, y=160)
                     e_ans_2.insert(tk.END, get_ans[1])
                 elif len_of_ans == 3:
-                    e_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_1.place(x=10, y=130)
                     e_ans_1.insert(tk.END, get_ans[0])
 
-                    e_ans_2 = tk.Entry(m_quest_features, width=20)
+                    e_ans_2 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_2.place(x=10, y=160)
                     e_ans_2.insert(tk.END, get_ans[1])
 
-                    e_ans_3 = tk.Entry(m_quest_features, width=20)
+                    e_ans_3 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_ans_3.place(x=10, y=190)
                     e_ans_3.insert(tk.END, get_ans[2])
 
@@ -999,36 +976,36 @@ class AdminHomePage(tk.Frame):
                 len_of_inc_ans = len(get_inc_ans)
 
                 if len_of_inc_ans == 1:
-                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_1.place(x=10, y=280)
                     e_inc_ans_1.insert(tk.END, get_inc_ans[0])
                 if len_of_inc_ans == 2:
-                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_1.place(x=10, y=280)
                     e_inc_ans_1.insert(tk.END, get_inc_ans[0])
 
-                    e_inc_ans_2 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_2 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_2.place(x=10, y=310)
                     e_inc_ans_2.insert(tk.END, get_inc_ans[1])
 
                 if len_of_inc_ans == 3:
-                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_1 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_1.place(x=10, y=280)
-                    e_inc_ans_1.insert(tk.END, get_inc_ans_tf[0])
+                    e_inc_ans_1.insert(tk.END, get_inc_ans[0])
 
-                    e_inc_ans_2 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_2 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_2.place(x=10, y=310)
-                    e_inc_ans_2.insert(tk.END, get_inc_ans_tf[1])
+                    e_inc_ans_2.insert(tk.END, get_inc_ans[1])
 
-                    e_inc_ans_3 = tk.Entry(m_quest_features, width=20)
+                    e_inc_ans_3 = tk.Entry(m_quest_features, width=20, bd=5)
                     e_inc_ans_3.place(x=10, y=340)
-                    e_inc_ans_3.insert(tk.END, get_inc_ans_tf[2])
+                    e_inc_ans_3.insert(tk.END, get_inc_ans[2])
 
                 def gather_inc_ans():
                     if len_of_inc_ans == 1:
                         return ",".join([e_inc_ans_1.get()])
                     if len_of_inc_ans == 2:
-                        print('ss')
+
                         return ",".join([e_inc_ans_1.get(), e_inc_ans_2.get()])
                     if len_of_inc_ans == 3:
                         return ",".join([e_inc_ans_1.get(), e_inc_ans_2.get(), e_inc_ans_3.get()])
@@ -1042,25 +1019,25 @@ class AdminHomePage(tk.Frame):
                         return ",".join([e_ans_1.get(), e_ans_2.get(), e_ans_3.get()])
 
                 ans_btn = tk.Button(m_quest_features, text="Apply", width=10,
-                                    command=lambda: update_quest(quest_id, 'answer', gather_ans()))
+                                    command=lambda: update_quest(quest_id, 'answer', gather_ans(), m_quest_features))
                 ans_btn.place(x=10, y=220)
 
                 inc_ans_btn = tk.Button(m_quest_features, text="Apply", width=10,
                                         command=lambda: update_quest(
                                             quest_id,
                                             'possible_answers',
-                                            gather_inc_ans()))
+                                            gather_inc_ans(), m_quest_features))
                 inc_ans_btn.place(x=10, y=370)
 
                 get_quest_mark = find_quest_mark(quest_id)
                 l_quest_mark = tk.Label(m_quest_features, text="Question Mark: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 l_quest_mark.place(x=10, y=410)
-                e_quest_mark = tk.Entry(m_quest_features, width=8)
+                e_quest_mark = tk.Entry(m_quest_features, width=8, bd=5)
                 e_quest_mark.place(x=150, y=410)
                 e_quest_mark.insert(tk.END, get_quest_mark)
 
                 q_m_btn = tk.Button(m_quest_features, text="Apply", width=10,
-                                    command=lambda: update_quest(quest_id, 'quest_mark', e_quest_mark.get()))
+                                    command=lambda: update_quest(quest_id, 'quest_mark', e_quest_mark.get(), m_quest_features))
                 q_m_btn.place(x=220, y=410)
 
             if type_of_q == 'bm':
@@ -1071,7 +1048,7 @@ class AdminHomePage(tk.Frame):
                 l_inc = len(get_inc_ans)
 
                 if l_inc == 1:
-                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_1.place(x=10, y=130)
                     e_p_ans_1.insert(tk.END, get_inc_ans[0])
 
@@ -1085,11 +1062,11 @@ class AdminHomePage(tk.Frame):
                     curr_bma_e_p_ans1.place(x=150, y=130)
 
                 if l_inc == 2:
-                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_1.place(x=10, y=130)
                     e_p_ans_1.insert(tk.END, get_inc_ans[0])
 
-                    e_p_ans_2 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_2 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_2.place(x=10, y=180)
                     e_p_ans_2.insert(tk.END, get_inc_ans[1])
 
@@ -1113,15 +1090,15 @@ class AdminHomePage(tk.Frame):
 
                 if l_inc == 3:
 
-                    e_p_ans_1 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_1 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_1.place(x=10, y=130)
                     e_p_ans_1.insert(tk.END, get_inc_ans[0])
 
-                    e_p_ans_2 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_2 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_2.place(x=10, y=180)
                     e_p_ans_2.insert(tk.END, get_inc_ans[1])
 
-                    e_p_ans_3 = tk.Entry(m_quest_features, width=15)
+                    e_p_ans_3 = tk.Entry(m_quest_features, width=15, bd=5)
                     e_p_ans_3.place(x=10, y=230)
                     e_p_ans_3.insert(tk.END, get_inc_ans[2])
 
@@ -1183,7 +1160,7 @@ class AdminHomePage(tk.Frame):
                         # return
                         del_feed_quest_from_db(quest_id)
                         add_feed_frame(quest_id, p_ans, False, m_id, True)
-                        update_quest(quest_id, 'possible_answers', ",".join(p_ans))
+                        update_quest(quest_id, 'possible_answers', ",".join(p_ans), m_quest_features)
 
                     btn_sub = tk.Button(m_quest_features, text="Submit", command=lambda:
                     update_bma_ans())
@@ -1199,22 +1176,28 @@ class AdminHomePage(tk.Frame):
 
             t_new_name = tk.Label(mod_features, text="New Module Name: ", font=('Helvetica', 13, 'bold'), fg="white", bg='#5D9DE5')
             t_new_name.place(x=10, y=10)
-            new_name_entry = tk.Entry(mod_features, fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'), borderwidth=5, width=22)
+            new_name_entry = tk.Entry(mod_features, font=('Helvetica', 13, 'bold'), borderwidth=5, width=22, bd=5)
             new_name_entry.place(x=10, y=50)
             refresh_btn = tk.Button(mod_features, text="Refresh",fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'), width=10,
                                     command=lambda:
                                     update_option_menu(curr_quest_to_del_m,
                                                        curr_mod_name,
-                                                       curr_quest_to_del))
+                                                       curr_quest_to_del
+                                                       ))
             refresh_btn.place(x=550, y=10)
 
-            def execute_mod_change(curr_name, desired_name):
+            def execute_mod_change(curr_name, desired_name, frame=False):
+                if desired_name == '':
+                    messagebox.showinfo("Error",
+                                        "The field must have been left blank. Please fill the field you edited.",
+                                        parent=frame)
+                    return
                 update_mod_name_in_db(curr_name, desired_name)
                 delBtnModsAndUpdate()
                 window.destroy()
 
             new_name_sub = tk.Button(mod_features, text="submit", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'), width=7,
-                                     command=lambda: execute_mod_change(curr_mod_name, new_name_entry.get()))
+                                     command=lambda: execute_mod_change(curr_mod_name, new_name_entry.get(), mod_features))
             new_name_sub.place(x=240, y=50)
 
             # Add Question:
@@ -1236,6 +1219,11 @@ class AdminHomePage(tk.Frame):
 
             def del_quest_from_db(quest_name):
                 # Delete Feedback and BMA answers from db
+                len_of_quest = len(fetch_all_quest(curr_mod_name))
+                if len_of_quest == 1:
+                    messagebox.showinfo("Error", "You cannot delete the existing question as the module will have 0 question to render."
+                                                 " You must add another question first or delete the module itself.", parent=mod_features)
+                    return
                 q_id = find_quest_id(quest_name)
                 del_feed_quest_from_db(q_id)
                 del_bma_quest_from_db(q_id)
@@ -1311,7 +1299,17 @@ class AdminHomePage(tk.Frame):
                 z -= 1
 
             return module[i:z + 1]
+        def exist_quest(quest_name):
+            a = find_quest_id(quest_name)
+            return False if a == [] else True
 
+        print(exist_quest('sss'))
+        def isScoreValid(score):
+            alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-~`!@#$%^&*()_-+={}[]|\:;<,>.?/'
+            for x in score:
+                if x in alphabet:
+                    return False
+            return True
         # ---------------END OF USEFUL FUNCTIONS ---------------
 
         # ---------------ADD MODULE---------------
@@ -1321,18 +1319,7 @@ class AdminHomePage(tk.Frame):
             window.geometry("700x600")
             head = tk.LabelFrame(window, text="Admin Page", fg="white", bg='#5D9DE5', font=('Helvetica', 18, 'bold'), bd=1)
             head.pack(fill='both', expand='yes', padx=10, pady=10)
-            title = tkFont.Font(
-                family="Arial",
-                size=25,
-            )
-            opt_title = tkFont.Font(
-                family="Arial",
-                size=20
-            )
-            opts = tkFont.Font(
-                family="Arial",
-                size=60
-            )
+
             if curr_mod_name:
                 l1 = tk.Label(head, text="Select a type of question to add: True/False, MultipleChoice or BestMatch",
                               fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
@@ -1374,20 +1361,20 @@ class AdminHomePage(tk.Frame):
                 max_score = tk.Label(head,fg="white", bg='#5D9DE5', text="Score the user should get if  answered correctly: ", font=('Helvetica', 13, 'bold'))
                 max_score.place(x=10, y=60)
 
-                e_score = tk.Entry(head, width=5)
+                e_score = tk.Entry(head, width=5, bd=5)
                 e_score.place(x=410, y=60)
 
                 if mod_name:
-                    mod_name_title = tk.Label(head, text=curr_mod_name, fg="white", bg='#5D9DE5')
+                    mod_name_title = tk.Label(head, text=curr_mod_name, fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                     mod_name_title.place(x=350, y=10)
                 else:
-                    e1 = tk.Entry(head, width=30)
+                    e1 = tk.Entry(head, width=30, bd=5)
                     e1.place(x=130, y=10)
 
                 l2 = tk.Label(head, text="Question: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 l2.place(x=10, y=110)
 
-                e2 = tk.Entry(head, width=30)
+                e2 = tk.Entry(head, width=30, bd=5)
                 e2.place(x=100, y=110)
 
 
@@ -1402,19 +1389,23 @@ class AdminHomePage(tk.Frame):
                     ans_l = tk.Label(head, text="Correct Answer: ", fg="white", bg='#5D9DE5',font=('Helvetica', 11, 'bold'))
                     ans_l.place(x=10, y=150)
 
-                    ans_e = tk.Entry(head, width=30)
+                    ans_e = tk.Entry(head, width=30, bd=5)
                     ans_e.place(x=140, y=150)
 
                     def register_tf():
+
                         if is_mod_name() == '':
                             messagebox.showinfo("Error", "Enter a module name", parent=tf_form)
                             return
-                        if e_score.get() == '' or int(e_score.get()) <= 0:
-                            messagebox.showinfo("Error", "Make sure the score is not empty / is an integer / greather than 0", parent=tf_form)
+                        if e_score.get() == '' or isScoreValid(e_score.get()) is False or int(e_score.get()) <= 0:
+                            messagebox.showinfo("Error", "Make sure the score is not empty / is an integer / greater than 0", parent=tf_form)
                             return
 
                         if e2.get() == '':
                             messagebox.showinfo("Error", "Question cannot be left empty ", parent=tf_form)
+                            return
+                        if exist_quest(e2.get()):
+                            messagebox.showinfo("Error", "This question already exist. Please type another question.", parent=tf_form)
                             return
                         if ans_e.get().lower() == 'false' or ans_e.get().lower() == 'true':
                             inc_ans = 'true' if ans_e.get().lower() == 'false' else 'false'
@@ -1464,34 +1455,34 @@ class AdminHomePage(tk.Frame):
                     l_num_ans = tk.Label(head, text="N. Inc. Answers: ", fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                     l_num_ans.place(x=300, y=180)
 
-                    ans_1 = tk.Entry(head, width=30)
+                    ans_1 = tk.Entry(head, width=30, bd=5)
                     ans_1.place(x=100, y=220)
 
-                    ans_1 = tk.Entry(head, width=30)
+                    ans_1 = tk.Entry(head, width=30, bd=5)
                     ans_1.place(x=100, y=220)
-                    ans_2 = tk.Entry(head, width=30)
+                    ans_2 = tk.Entry(head, width=30, bd=5)
                     ans_2.place(x=100, y=250)
 
-                    ans_1 = tk.Entry(head, width=30)
+                    ans_1 = tk.Entry(head, width=30, bd=5)
                     ans_1.place(x=100, y=220)
-                    ans_2 = tk.Entry(head, width=30)
+                    ans_2 = tk.Entry(head, width=30, bd=5)
                     ans_2.place(x=100, y=250)
-                    ans_3 = tk.Entry(head, width=30)
+                    ans_3 = tk.Entry(head, width=30, bd=5)
                     ans_3.place(x=100, y=280)
 
-                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1 = tk.Entry(head, width=30, bd=5)
                     inc_ans_1.place(x=300, y=220)
 
-                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1 = tk.Entry(head, width=30, bd=5)
                     inc_ans_1.place(x=300, y=220)
-                    inc_ans_2 = tk.Entry(head, width=30)
+                    inc_ans_2 = tk.Entry(head, width=30, bd=5)
                     inc_ans_2.place(x=300, y=250)
 
-                    inc_ans_1 = tk.Entry(head, width=30)
+                    inc_ans_1 = tk.Entry(head, width=30, bd=5)
                     inc_ans_1.place(x=300, y=220)
-                    inc_ans_2 = tk.Entry(head, width=30)
+                    inc_ans_2 = tk.Entry(head, width=30, bd=5)
                     inc_ans_2.place(x=300, y=250)
-                    inc_ans_3 = tk.Entry(head, width=30)
+                    inc_ans_3 = tk.Entry(head, width=30, bd=5)
                     inc_ans_3.place(x=300, y=280)
 
                     def store_inc_and_corr_answers_in_db():
@@ -1499,11 +1490,14 @@ class AdminHomePage(tk.Frame):
                         if is_mod_name() == '':
                             messagebox.showinfo("Error", "Enter a module name", parent=tf_form)
                             return
-                        if e_score.get() == '' or int(e_score.get()) <= 0 :
-                            messagebox.showinfo("Error", "The score cannot be left empty ", parent=tf_form)
+                        if e_score.get() == '' or isScoreValid(e_score.get()) is False or int(e_score.get()) <= 0:
+                            messagebox.showinfo("Error", "Make sure the score is not empty / is an integer / greater than 0", parent=tf_form)
                             return
                         if e2.get() == '':
                             messagebox.showinfo("Error", "Question cannot be left empty ", parent=tf_form)
+                            return
+                        if exist_quest(e2.get()):
+                            messagebox.showinfo("Error", "This question already exist. Please type another question.", parent=tf_form)
                             return
                         if does_mod_exist_in_db and mod_name is False:
                             messagebox.showinfo("Error", "This module name already exists. "
@@ -1516,28 +1510,36 @@ class AdminHomePage(tk.Frame):
                             if x != '':
                                 q += 1
                         if q >= 6:
-                            tk.messagebox.showerror("showerror", "You can only add 5 answers/incorrect answers at most")
-                            tf_form.destroy()
+                            tk.messagebox.showinfo("showerror", "You can only add 5 answers/incorrect answers at most", parent=head)
                             return
-
+                        canRun = False
                         def grab_only_ans(*args):
                             l = []
+                            c = 0
                             for x in args:
                                 if x != '':
                                     l.append(x)
+                            for a in l:
+                                if a == '':
+                                    c +=1
+                            if c < 2:
+                                messagebox.showinfo("Error", "You must add more than 1 answer/possible answer", parent=tf_form)
+                                return
+                            canRun = True
                             return ",".join(l)
 
                         list_of_inc_ans = grab_only_ans(inc_ans_1.get(), inc_ans_2.get(), inc_ans_3.get())
                         list_of_ans = grab_only_ans(ans_1.get(), ans_2.get(), ans_3.get())
 
-                        register_mod_DB(is_mod_name(),
-                                        e2.get(),
-                                        list_of_ans.lower(),
-                                        list_of_inc_ans,
-                                        tf_form,
-                                        type,
-                                        e_score.get(),
-                                        exist_mod)
+                        if canRun:
+                            register_mod_DB(is_mod_name(),
+                                            e2.get(),
+                                            list_of_ans,
+                                            list_of_inc_ans,
+                                            tf_form,
+                                            type,
+                                            e_score.get(),
+                                            exist_mod)
 
                     submit_mod = tk.Button(head, text="add Module", command=lambda: store_inc_and_corr_answers_in_db())
                     submit_mod.place(x=130, y=320)
@@ -1550,11 +1552,11 @@ class AdminHomePage(tk.Frame):
                                       font=('Helvetica', 11, 'bold'), fg="white", bg='#5D9DE5')
                     t_ans.place(x=10, y=150)
 
-                    p_ans_1 = tk.Entry(head, width=30)
-                    p_ans_2 = tk.Entry(head, width=30)
-                    p_ans_3 = tk.Entry(head, width=30)
-                    p_ans_4 = tk.Entry(head, width=30)
-                    p_ans_5 = tk.Entry(head, width=30)
+                    p_ans_1 = tk.Entry(head, width=30, bd=5)
+                    p_ans_2 = tk.Entry(head, width=30, bd=5)
+                    p_ans_3 = tk.Entry(head, width=30, bd=5)
+                    p_ans_4 = tk.Entry(head, width=30, bd=5)
+                    p_ans_5 = tk.Entry(head, width=30, bd=5)
 
                     p_ans_1.place(x=10, y=180)
                     p_ans_2.place(x=10, y=220)
@@ -1567,36 +1569,43 @@ class AdminHomePage(tk.Frame):
                         if is_mod_name() == '':
                             messagebox.showinfo("Error", "Enter a module name", parent=tf_form)
                             return
-                        if e_score.get() == '' or int(e_score.get()) <= 0 :
-                            messagebox.showinfo("Error", "The score cannot be left empty ", parent=tf_form)
+                        if e_score.get() == '' or isScoreValid(e_score.get()) is False or int(e_score.get()) <= 0 :
+                            messagebox.showinfo("Error", "Make sure the score is not empty / is an integer / greater than 0", parent=tf_form)
                             return
                         if e2.get() == '':
                             messagebox.showinfo("Error", "Question cannot be left empty ", parent=tf_form)
+                            return
+                        if exist_quest(e2.get()):
+                            messagebox.showinfo("Error", "This question already exist. Please type another question.", parent=tf_form)
                             return
                         if does_mod_exist_in_db and mod_name is False:
                             messagebox.showinfo("Error", "This module name already exists. "
                                                          "You will need to use another name.", parent=tf_form)
                             return
-
+                        canExecute = False
                         def grab_only_ans(*args):
                             l = []
                             for x in args:
                                 if x != '':
                                     l.append(x)
+                            if l == []:
+                                messagebox.showinfo("Error", "You must fill at least 1 field of answer/possible answer.",                                                    parent=tf_form)
+                                return
+                            canExecute = True
                             return ",".join(l)
-
                         list_of_ans = grab_only_ans(p_ans_1.get(), p_ans_2.get(), p_ans_3.get(), p_ans_4.get(),
                                                     p_ans_5.get())
-                        register_mod_DB(
-                            is_mod_name(),
-                            e2.get(),
-                            list_of_ans.lower(),
-                            '',
-                            tf_form,
-                            type,
-                            e_score.get(),
-                            exist_mod
-                        )
+                        if canExecute:
+                            register_mod_DB(
+                                is_mod_name(),
+                                e2.get(),
+                                list_of_ans,
+                                '',
+                                tf_form,
+                                type,
+                                e_score.get(),
+                                exist_mod
+                            )
 
                     submit_mod_bm = tk.Button(head, text="Continue", command=lambda: phase_1_of_bma())
                     submit_mod_bm.place(x=200, y=370)
@@ -1628,11 +1637,11 @@ class AdminHomePage(tk.Frame):
                                  fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
             t_phase_2.place(x=10, y=10)
 
-            bma_p2_ans_1 = tk.Entry(admin_phase_2, width=30)
-            bma_p2_ans_2 = tk.Entry(admin_phase_2, width=30)
-            bma_p2_ans_3 = tk.Entry(admin_phase_2, width=30)
-            bma_p2_ans_4 = tk.Entry(admin_phase_2, width=30)
-            bma_p2_ans_5 = tk.Entry(admin_phase_2, width=30)
+            bma_p2_ans_1 = tk.Entry(admin_phase_2, width=30, bd=5)
+            bma_p2_ans_2 = tk.Entry(admin_phase_2, width=30, bd=5)
+            bma_p2_ans_3 = tk.Entry(admin_phase_2, width=30, bd=5)
+            bma_p2_ans_4 = tk.Entry(admin_phase_2, width=30, bd=5)
+            bma_p2_ans_5 = tk.Entry(admin_phase_2, width=30, bd=5)
 
             bma_p2_ans_1.place(x=10, y=50)
             bma_p2_ans_2.place(x=10, y=100)
@@ -1822,89 +1831,101 @@ class AdminHomePage(tk.Frame):
             if l == 2:
                 ans1 = tk.Label(f_head, text=answers[0], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans1.place(x=c_x, y=c_y)
-                e_ans1 = tk.Entry(f_head, width=40)
+                e_ans1 = tk.Entry(f_head, width=40, bd=5)
                 e_ans1.place(x=c_x * 11, y=c_y)
 
                 ans2 = tk.Label(f_head, text=answers[1], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans2.place(x=c_x, y=c_y * 2)
-                e_ans2 = tk.Entry(f_head, width=40)
+                e_ans2 = tk.Entry(f_head, width=40, bd=5)
                 e_ans2.place(x=c_x * 11, y=c_y * 2)
             if l == 3:
                 ans1 = tk.Label(f_head, text=answers[0], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans1.place(x=c_x, y=c_y)
-                e_ans1 = tk.Entry(f_head, width=40)
+                e_ans1 = tk.Entry(f_head, width=40, bd=5)
                 e_ans1.place(x=c_x * 11, y=c_y)
 
                 ans2 = tk.Label(f_head, text=answers[1], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans2.place(x=c_x, y=c_y * 2)
-                e_ans2 = tk.Entry(f_head, width=40)
+                e_ans2 = tk.Entry(f_head, width=40, bd=5)
                 e_ans2.place(x=c_x * 11, y=c_y * 2)
 
                 ans3 = tk.Label(f_head, text=answers[2], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans3.place(x=c_x, y=c_y * 3)
-                e_ans3 = tk.Entry(f_head, width=40)
+                e_ans3 = tk.Entry(f_head, width=40, bd=5)
                 e_ans3.place(x=c_x * 11, y=c_y * 3)
 
             if l == 4:
                 ans1 = tk.Label(f_head, text=answers[0], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans1.place(x=c_x, y=c_y)
-                e_ans1 = tk.Entry(f_head, width=40)
+                e_ans1 = tk.Entry(f_head, width=40, bd=5)
                 e_ans1.place(x=c_x * 11, y=c_y)
 
                 ans2 = tk.Label(f_head, text=answers[1], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans2.place(x=c_x, y=c_y * 2)
-                e_ans2 = tk.Entry(f_head, width=40)
+                e_ans2 = tk.Entry(f_head, width=40, bd=5)
                 e_ans2.place(x=c_x * 11, y=c_y * 2)
 
                 ans3 = tk.Label(f_head, text=answers[2], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans3.place(x=c_x, y=c_y * 3)
-                e_ans3 = tk.Entry(f_head, width=40)
+                e_ans3 = tk.Entry(f_head, width=40, bd=5)
                 e_ans3.place(x=c_x * 11, y=c_y * 3)
 
                 ans4 = tk.Label(f_head, text=answers[3], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans4.place(x=c_x, y=c_y * 4)
-                e_ans4 = tk.Entry(f_head, width=40)
+                e_ans4 = tk.Entry(f_head, width=40, bd=5)
                 e_ans4.place(x=c_x * 11, y=c_y * 4)
             if l == 5:
                 ans1 = tk.Label(f_head, text=answers[0], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans1.place(x=c_x, y=c_y)
-                e_ans1 = tk.Entry(f_head, width=40)
+                e_ans1 = tk.Entry(f_head, width=40, bd=5)
                 e_ans1.place(x=c_x * 11, y=c_y)
 
                 ans2 = tk.Label(f_head, text=answers[1], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans2.place(x=c_x, y=c_y * 2)
-                e_ans2 = tk.Entry(f_head, width=40)
+                e_ans2 = tk.Entry(f_head, width=40, bd=5)
                 e_ans2.place(x=c_x * 11, y=c_y * 2)
 
                 ans3 = tk.Label(f_head, text=answers[2], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans3.place(x=c_x, y=c_y * 3)
-                e_ans3 = tk.Entry(f_head, width=40)
+                e_ans3 = tk.Entry(f_head, width=40, bd=5)
                 e_ans3.place(x=c_x * 11, y=c_y * 3)
 
                 ans4 = tk.Label(f_head, text=answers[3], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans4.place(x=c_x, y=c_y * 4)
-                e_ans4 = tk.Entry(f_head, width=40)
+                e_ans4 = tk.Entry(f_head, width=40, bd=5)
                 e_ans4.place(x=c_x * 11, y=c_y * 4)
 
                 ans5 = tk.Label(f_head, text=answers[4], fg="white", bg='#5D9DE5', font=('Helvetica', 13, 'bold'))
                 ans5.place(x=c_x, y=c_y * 5)
-                e_ans5 = tk.Entry(f_head, width=40)
+                e_ans5 = tk.Entry(f_head, width=40,bd=5)
                 e_ans5.place(x=c_x * 11, y=c_y * 5)
 
             def insert_all_feed():
                 if l == 2:
+                    if e_ans1.get() == '' or e_ans2.get() == '':
+                        messagebox.showinfo("Error", "You must fill up both fields with their respective feedback.", parent=f_head)
+                        return
                     add_feed_to_DB(quest_id, answers[0], e_ans1.get(), m_id)
                     add_feed_to_DB(quest_id, answers[1], e_ans2.get(), m_id)
                 if l == 3:
+                    if e_ans1.get() == '' or e_ans2.get() == '' or e_ans3.get():
+                        messagebox.showinfo("Error", "You must fill up both fields with their respective feedback.", parent=f_head)
+                        return
                     add_feed_to_DB(quest_id, answers[0], e_ans1.get(), m_id)
                     add_feed_to_DB(quest_id, answers[1], e_ans2.get(), m_id)
                     add_feed_to_DB(quest_id, answers[2], e_ans3.get(), m_id)
                 if l == 4:
+                    if e_ans1.get() == '' or e_ans2.get() == '' or e_ans3.get() or e_ans4.get():
+                        messagebox.showinfo("Error", "You must fill up both fields with their respective feedback.", parent=f_head)
+                        return
                     add_feed_to_DB(quest_id, answers[0], e_ans1.get(), m_id)
                     add_feed_to_DB(quest_id, answers[1], e_ans2.get(), m_id)
                     add_feed_to_DB(quest_id, answers[2], e_ans3.get(), m_id)
                     add_feed_to_DB(quest_id, answers[3], e_ans4.get(), m_id)
                 if l == 5:
+                    if e_ans1.get() == '' or e_ans2.get() == '' or e_ans3.get() or e_ans4.get() or e_ans5.get():
+                        messagebox.showinfo("Error", "You must fill up both fields with their respective feedback.", parent=f_head)
+                        return
                     add_feed_to_DB(quest_id, answers[0], e_ans1.get(), m_id)
                     add_feed_to_DB(quest_id, answers[1], e_ans2.get(), m_id)
                     add_feed_to_DB(quest_id, answers[2], e_ans3.get(), m_id)
@@ -2053,8 +2074,12 @@ class QuizzApp(tk.Tk):
             frame = f(window, self)
             self.containerOfFrames[f] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-        self.change_frame(AdminHomePage)
-
+        self.change_frame(LogInPage)
+    def exitSystem(self):
+        self.destroy()
+        # self.containerOfFrames[LogInPage].destroy()
+        # self.containerOfFrames[AdminHomePage].destroy()
+        # self.containerOfFrames[UserHomePage].destroy()
     def change_frame(self, page):
         frame = self.containerOfFrames[page]
         frame.tkraise()
