@@ -2,7 +2,7 @@
 import sqlite3
 
 def findModId(module_name):
-    conn = sqlite3.connect('./Databases/quiz_storage.db')
+    conn = sqlite3.connect('./question_bank.db')
     cursor = conn.execute("SELECT mod_id FROM Modules where mod_name = '" + module_name + "';")
     row = cursor.fetchall()
 
@@ -12,7 +12,7 @@ def findModId(module_name):
 def fetchModules():
     modules = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -29,14 +29,58 @@ def fetchModules():
             print("The SQLite connection is closed")
     return modules
 
+def fetchAnswer(question):
+    modules = ''
+    try:
+        sqliteConnection = sqlite3.connect('./question_bank.db')
+        cursor = sqliteConnection.cursor()
+        print("Succesfully connected to SQLite")
+
+        sqlite_insert_query = "SELECT answer from Questions " \
+                              "where quest_name = '" + question + "'"
+        count = cursor.execute(sqlite_insert_query)
+        sqliteConnection.commit()
+        modules = count.fetchall()
+        modules = [x[0] for x in modules]
+
+        cursor.close()
+    except sqlite3.Error as error:
+        print("Failed to fetch data", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    return modules
+
+def fetchPossibleAnswers(question):
+    modules = ''
+    try:
+        sqliteConnection = sqlite3.connect('./question_bank.db')
+        cursor = sqliteConnection.cursor()
+        print("Succesfully connected to SQLite")
+
+        sqlite_insert_query = "SELECT possible_answers from Questions " \
+                              "where quest_name = '" + str(question) + "'"
+        count = cursor.execute(sqlite_insert_query)
+        sqliteConnection.commit()
+        modules = count.fetchall()
+        modules = [x[0] for x in modules]
+
+        cursor.close()
+    except sqlite3.Error as error:
+        print("Failed to fetch data", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    return modules
 
 def fetch_all_quest(curr_mod_name):
     m_id = findModId(curr_mod_name)
-    print(m_id, 'module id')
     questions = []
     modules = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -54,10 +98,7 @@ def fetch_all_quest(curr_mod_name):
             sqliteConnection.close()
             print("The SQLite connection is closed")
 
-    for i in range(len(modules)):
-        questions.append(modules[i][0])
-
-    return questions
+    return modules
 
 
 def get_fathers_from_children(answers):
@@ -65,7 +106,7 @@ def get_fathers_from_children(answers):
 
     for i in range(len(answers)):
         try:
-            sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+            sqliteConnection = sqlite3.connect('./question_bank.db')
             cursor = sqliteConnection.cursor()
             print("Succesfully connected to SQLite")
 
@@ -89,7 +130,7 @@ def get_fathers_from_children(answers):
 def find_mod_quest_id(quest_name):
     result = []
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -112,7 +153,7 @@ def find_mod_quest_id(quest_name):
 def find_quest_id(quest_name):
     result = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -135,7 +176,7 @@ def find_quest_id(quest_name):
 def find_inc_ans_from_quest(quest_id):
     result = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -158,7 +199,7 @@ def find_inc_ans_from_quest(quest_id):
 def get_father_from_child(child):
     c = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -181,7 +222,7 @@ def get_father_from_child(child):
 def find_quest_mark(quest_id):
     result = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -205,7 +246,7 @@ def find_ans_from_quest(quest_id):
     result = ''
     ans = []
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -228,7 +269,7 @@ def find_ans_from_quest(quest_id):
 
 def add_ans_to_bma(q_id, father, child, m_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -251,7 +292,7 @@ def add_ans_to_bma(q_id, father, child, m_id):
 
 def del_bma_rows(q_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -271,7 +312,7 @@ def del_bma_rows(q_id):
 
 def update_quest(quest_id, column, new_answer):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -292,7 +333,7 @@ def update_quest(quest_id, column, new_answer):
 
 def del_feed_quest_from_db(q_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -313,7 +354,7 @@ def del_feed_quest_from_db(q_id):
 
 def del_bma_quest_from_db(q_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -334,7 +375,7 @@ def del_bma_quest_from_db(q_id):
 
 def del_quest_execute(q_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -356,7 +397,7 @@ def del_quest_execute(q_id):
 def find_quest_type(quest_name):
     result = ''
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -377,7 +418,7 @@ def find_quest_type(quest_name):
 
 def update_mod_name_in_db(curr_name, desired_name):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -401,7 +442,7 @@ def update_mod_name_in_db(curr_name, desired_name):
 
 def add_feed_to_DB(q_id, name, text, m_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -424,7 +465,7 @@ def add_feed_to_DB(q_id, name, text, m_id):
 
 def add_mod(mod_name):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -445,7 +486,7 @@ def add_mod(mod_name):
 
 def add_quest(quest_name, quest_mod_id, possible_answers, answer, mark, quest_type):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
         sqlite_insert_query = "INSERT INTO Questions (quest_name," \
@@ -469,7 +510,7 @@ def add_quest(quest_name, quest_mod_id, possible_answers, answer, mark, quest_ty
 
 def add_bma_ans(quest_id, father, child, mod_id):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
         sqlite_insert_query = "INSERT INTO BestMatchAns (quest_id," \
@@ -494,7 +535,7 @@ def update_bms_db_poss_ans(children, q_id):
     c = ",".join(children)
 
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
         sqlite_insert_query = "UPDATE QUESTIONS " \
@@ -524,7 +565,7 @@ def delAllFeedbackFromDB(moduleId):
     # cannot be deleted without
     # first all questions are removed.
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -553,7 +594,7 @@ def delAllBmaFromDB(moduleId):
     # cannot be deleted without
     # first all questions are removed.
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -582,7 +623,7 @@ def delAllQuestionsFromDB(moduleId):
     # cannot be deleted without
     # first all questions are removed.
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Succesfully connected to SQLite")
 
@@ -603,7 +644,7 @@ def delAllQuestionsFromDB(moduleId):
 
 def delModFromDB(moduleName):
     try:
-        sqliteConnection = sqlite3.connect('./Databases/quiz_storage.db')
+        sqliteConnection = sqlite3.connect('./question_bank.db')
         cursor = sqliteConnection.cursor()
         print("Successfully connected to SQLite")
 

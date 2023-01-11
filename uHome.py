@@ -1,5 +1,7 @@
 import tkinter as tk
-
+from sql_commads import *
+import tkinter.font as tkFont
+from userPageWidgets.launchQuiz import *
 import sqlite3
 
 # TO-DO List
@@ -35,18 +37,31 @@ class UserHomePage(tk.Frame):
         #
         # button = tk.Button(self, text="clickToAddScore", command=addScore)
         # button.grid(row=5, column=1)
-        for i in range(3):
-            self.columnconfigure(i, weight=1, minsize=75)
-            self.rowconfigure(i, weight=1, minsize=50)
+        fontFrame = tkFont.Font(
+            family="Arial",
+            size=26,
+            weight='bold')
+        lable_title = tk.Label(self, text="Select a module you would like to take the test on", font=fontFrame)
+        lable_title.pack()
 
-            for j in range(0, 3):
-                frame = tk.Frame(
-                    master=self,
-                    relief=tk.RAISED,
-                    borderwidth=1
-                )
-                frame.grid(row=i, column=j, padx=5, pady=5)
+        current_modules = fetchModules()
+        array_modules = [x[0] for x in current_modules]
 
-                label = tk.Label(master=frame, text=f"Row {i}\nColumn {j}")
-                label.pack(padx=5, pady=5)
+
+        variable = tk.StringVar(self)
+
+        variable.set(array_modules[0])  # default value
+
+        w = tk.OptionMenu(self, variable, *array_modules)
+        w.pack()
+
+        launch_module = tk.Button(self, text="Take Assesment", command=lambda: launchQuiz(variable.get()))
+        launch_module.pack()
+
+
+
+
+
+
+
 
