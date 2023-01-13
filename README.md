@@ -43,16 +43,16 @@ On the user interface, the project is currently missing some features such as th
 :heavy_check_mark: Admin Interface
 Within the admin page you can add/delete new modules/questions.
 
-<img src="./extra/adminPage.png">
+<img src="./images/adminPage.png">
 
 :heavy_check_mark: User Interface
 
 1
 
-## <img src="./extra/selectModule.png">
+## <img src="./images/selectModule.png">
 
 2
-<img src="./extra/question.png">
+<img src="./images/question.png">
 Within the user page you can select a module and take the quiz. You will be prompted to answer all questions for each module.
 
 ## :rocket: Technologies
