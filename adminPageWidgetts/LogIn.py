@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.font as tkFont
 from tkinter import messagebox
-from uHome import UserHomePage
-from aHome import AdminHomePage
+from userPageWidgets.uHome import UserHomePage
+from adminPageWidgetts.aHome import AdminHomePage
 
 
 class LogInPage(tk.Frame):

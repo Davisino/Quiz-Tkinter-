@@ -1,7 +1,7 @@
 import tkinter as tk
-from LogIn import LogInPage
-from uHome import UserHomePage
-from aHome import AdminHomePage
+from adminPageWidgetts.LogIn import LogInPage
+from userPageWidgets.uHome import UserHomePage  
+from adminPageWidgetts.aHome import AdminHomePage
 
 class QuizzApp(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -27,7 +27,7 @@ class QuizzApp(tk.Tk):
             frame = f(window, self)
             self.containerOfFrames[f] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-        self.change_frame(UserHomePage)
+        self.change_frame(LogInPage)
     def exitSystem(self):
         self.destroy()
         self.containerOfFrames[LogInPage].destroy()

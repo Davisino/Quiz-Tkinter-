@@ -28,10 +28,10 @@ def launchQuiz(quizName):
 
     for question in questions:
         a = fetchAnswer(question)
-        b = fetchPossibleAnswers(question)
+        b = fetchPossibleAnswers(question, True)
         answers = a + b
+     
         newQuestionFrame(question, answers, answers_from_user, questions)
-
 
 
 
@@ -74,13 +74,15 @@ def displayResults(questions, answers):
 
     correctAnswered = 0
     totalPoints = 0
+    print(len(answers), len(questions), "Hello")
     for i in range(len(questions)):
         question = questions[i]
         user_answer = answers[i]
-        correct_answer = fetchAnswer(question)
+        correct_answer = fetchAnswer(question)[0]
+        print(user_answer, correct_answer)
         if user_answer == correct_answer:
             correctAnswered +=1
-            totalPoints = int(fetchPointsFromQuestion(question))
+            totalPoints = fetchPointsFromQuestion(question)
 
             lquestion = tk.Label(window, text=question)
             lquestion.pack()
@@ -88,8 +90,14 @@ def displayResults(questions, answers):
             lfeedback = tk.Label(window, text=feeb)
             lfeedback.pack()
 
-    message = "WELL DONE! You have answered" + str(correct_answer) + " questions correctly" if \
-        correctAnswered >= 3 else "You have answered " + correctAnswered + " questions correctly, Keep working on it"
+    print(correctAnswered, " HEEROER")
+    message = f"WELL DONE! You have answered {correct_answer} questions correctly" if \
+        correctAnswered >= 3 else f"You have answered {correctAnswered} questions correctly and your total points are {totalPoints} , Keep working on it"
     title = tk.Label(window, text=message)
     title.pack()
-
+    secondMessage = tk.Label(window, text="Which means you have score a:")
+    secondMessage.pack()
+    score = (correctAnswered * 100) / len(questions)
+    
+    finalScore = tk.Label(window, text=str(score), font=("Times New Roman", 20, 'bold') )
+    finalScore.pack()

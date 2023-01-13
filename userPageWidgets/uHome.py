@@ -47,9 +47,10 @@ class UserHomePage(tk.Frame):
         current_modules = fetchModules()
         array_modules = [x[0] for x in current_modules]
 
+     
 
         variable = tk.StringVar(self)
-
+        print(current_modules)
         variable.set(array_modules[0])  # default value
 
         w = tk.OptionMenu(self, variable, *array_modules)

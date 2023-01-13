@@ -8,6 +8,79 @@ def findModId(module_name):
 
     return str(row[0][0]) if row != [] else False
 
+def get_quest_id(question):
+  
+    modules = ''
+    try:
+        sqliteConnection = sqlite3.connect('./question_bank.db')
+        cursor = sqliteConnection.cursor()
+        print("Succesfully connected to SQLite")
+
+        sqlite_insert_query = "SELECT quest_id from Questions " \
+                              "where quest_name = '" + question + "' "
+        count = cursor.execute(sqlite_insert_query)
+        sqliteConnection.commit()
+        modules = count.fetchall()
+        modules = [x[0] for x in modules]
+
+        cursor.close()
+    except sqlite3.Error as error:
+        print("Failed to fetch data", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    return modules[0]
+
+def fetchFeedbackFromQuestion(question, user_answer):
+    
+    quest_id = get_quest_id(question)
+    modules = ''
+    try:
+        sqliteConnection = sqlite3.connect('./question_bank.db')
+        cursor = sqliteConnection.cursor()
+        print("Succesfully connected to SQLite")
+
+        sqlite_insert_query = "SELECT feed_text from Feedback " \
+                              "where quest_id = '" + str(quest_id) + "' "\
+                            " and feed_ans_name = '" + user_answer + "'" 
+        count = cursor.execute(sqlite_insert_query)
+        sqliteConnection.commit()
+        modules = count.fetchall()
+        modules = [x[0] for x in modules]
+
+        cursor.close()
+    except sqlite3.Error as error:
+        print("Failed to fetch data", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    return modules[0]
+
+def fetchPointsFromQuestion(question):
+    
+    modules = ''
+    try:
+        sqliteConnection = sqlite3.connect('./question_bank.db')
+        cursor = sqliteConnection.cursor()
+        print("Succesfully connected to SQLite")
+
+        sqlite_insert_query = "SELECT quest_mark from Questions " \
+                              "where quest_name = '" + question + "'"
+        count = cursor.execute(sqlite_insert_query)
+        sqliteConnection.commit()
+        modules = count.fetchall()
+        modules = [x[0] for x in modules]
+
+        cursor.close()
+    except sqlite3.Error as error:
+        print("Failed to fetch data", error)
+    finally:
+        if sqliteConnection:
+            sqliteConnection.close()
+            print("The SQLite connection is closed")
+    return int(modules[0])
 
 def fetchModules():
     modules = ''
@@ -18,6 +91,7 @@ def fetchModules():
 
         sqlite_insert_query = "SELECT mod_name from Modules"
         count = cursor.execute(sqlite_insert_query)
+
         sqliteConnection.commit()
         modules = count.fetchall()
         cursor.close()
@@ -28,7 +102,7 @@ def fetchModules():
             sqliteConnection.close()
             print("The SQLite connection is closed")
     return modules
-
+print(fetchModules(), 'sss')
 def fetchAnswer(question):
     modules = ''
     try:
@@ -52,7 +126,7 @@ def fetchAnswer(question):
             print("The SQLite connection is closed")
     return modules
 
-def fetchPossibleAnswers(question):
+def fetchPossibleAnswers(question, isMCQ= False):
     modules = ''
     try:
         sqliteConnection = sqlite3.connect('./question_bank.db')
@@ -73,8 +147,8 @@ def fetchPossibleAnswers(question):
         if sqliteConnection:
             sqliteConnection.close()
             print("The SQLite connection is closed")
-    return modules
-
+ 
+    return modules[0].split(',') if isMCQ else modules 
 def fetch_all_quest(curr_mod_name):
     m_id = findModId(curr_mod_name)
     questions = []
