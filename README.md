@@ -1,5 +1,5 @@
 <div align="center" id="top"> 
-  <img src="./extra/logo.png" alt="Project" />
+  <img src="./images/logo.png" alt="Project" />
 
 &#xa0;
 
