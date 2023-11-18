@@ -1,7 +1,4 @@
 <div align="center" id="top"> 
-  <img src="./images/logo.png" alt="Project" />
-
-&#xa0;
 
   <!-- <a href="https://project.netlify.app">Demo</a> -->
 </div>
