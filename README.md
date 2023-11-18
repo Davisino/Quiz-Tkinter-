@@ -25,7 +25,7 @@
 
 <br>
 
-## :dart: About
+## About
 
 The Quiz APP is built as part of a programming module. It uses some of the OOP properties.
 
@@ -35,7 +35,7 @@ ALthough this project was part of a module, I enjoyed it a lot. Some of the feat
 
 On the user interface, the project is currently missing some features such as the "grade calculator" based on the amount of questions it took. A "print" function was also considered.
 
-## :sparkles: Features
+## Features
 
 :heavy_check_mark: Admin Interface
 Within the admin page you can add/delete new modules/questions.
@@ -52,7 +52,7 @@ Within the admin page you can add/delete new modules/questions.
 <img src="./images/question.png">
 Within the user page you can select a module and take the quiz. You will be prompted to answer all questions for each module.
 
-## :rocket: Technologies
+## Technologies
 
 The following tools were used in this project:
 
@@ -60,11 +60,11 @@ The following tools were used in this project:
 - [Tkinter](https://docs.python.org/3/library/tkinter.html)
 - [Sqlite3](https://www.sqlite.org/index.html)
 
-## :white_check_mark: Requirements
+## Requirements
 
 Before starting :checkered_flag:, you need to have [Git](https://git-scm.com) and [Python](https://www.python.org/) installed.
 
-## :checkered_flag: Starting
+## Starting
 
 ```bash
 # Clone this project
@@ -79,7 +79,7 @@ $ python3 App.py
 
 ```
 
-## :memo: License
+## License
 
 This project is under license from MIT. For more details, see the [LICENSE](LICENSE.md) file.
 
